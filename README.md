@@ -7,16 +7,16 @@ An AI-assisted system that automatically generates technical documentation, API 
 Modern software teams struggle with outdated documentation, inconsistent API references, and rushed release notes.
 The project aims to reduce manual documentation effort and keep documentation consistent with the evolving codebase. It is designed to integrate with modern DevOps CI/CD pipelines so that documentation can be generated and updated automatically during build and deployment workflows.
 
-### Key Features/Goals:
+### Key Features/Goals:-
 
-- Automatic API reference generation
+- Automatic API reference generation.
 
-- Intelligent release notes from Git commits
+- Intelligent release notes from Git commits.
 
-- Module and service-level documentation
+- Module and service-level documentation.
 
-- CI/CD integration for automated updates
+- CI/CD integration for automated updates.
 
-- AI-enhanced code explanations
+- AI-enhanced code explanations.
 
-- Version-aware documentation tied to releases
+- Version-aware documentation tied to releases.
