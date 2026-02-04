@@ -1,0 +1,66 @@
+# ===============================
+# Python / Django Ignore
+# ===============================
+
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+db.sqlite3
+
+# Django static/media
+staticfiles/
+media/
+
+# Django secret files
+.env
+*.log
+
+# ===============================
+# React / Node Ignore
+# ===============================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# React build output
+build/
+dist/
+
+# ===============================
+# OS Ignore
+# ===============================
+
+.DS_Store
+Thumbs.db
+
+# ===============================
+# VS Code Ignore
+# ===============================
+
+.vscode/
+.idea/
+
+# ===============================
+# PDF Outputs Ignore
+# ===============================
+
+*.pdf
+
+# ===============================
+# Ollama Ignore (No model files)
+# ===============================
+
+.ollama/
+
+# ===============================
+# Others
+# ===============================
+
+*.zip
+*.rar
