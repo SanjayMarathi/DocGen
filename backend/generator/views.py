@@ -1,118 +1,126 @@
-from django.shortcuts import render
-import requests
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.http import FileResponse
-from .pdf_generator import create_pdf
-from django.http import StreamingHttpResponse
-import json
+from django.http import StreamingHttpResponse, FileResponse
 import requests
+import json
+import os
+import re
+from .pdf_generator import create_pdf
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-
-
-def classify_input(text):
-    check_prompt = f"""
-You are a strict classifier for a programming assistant.
-
-Your task:
-Decide if the input is related to software, programming, coding, frameworks, tools, or computer science.
-
-Treat these as PROGRAMMING:
-languages (python, java, c++, js)
-frameworks (react, django, node, spring, flask)
-concepts (api, database, array, algorithm, recursion, oops)
-errors, debugging, coding doubts
-
-Categories (return ONLY ONE word):
-
-CODE
-PROGRAMMING_QUESTION
-NON_TECH
-
-Examples:
-"What is React?" -> PROGRAMMING_QUESTION
-"Explain Python list" -> PROGRAMMING_QUESTION
-"print('hello')" -> CODE
-"who is prime minister" -> NON_TECH
-"weather today" -> NON_TECH
-
-Input:
-{text}
-"""
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b")
 
 
-    payload = {
-        "model": "qwen2.5-coder:7b",
-        "prompt": check_prompt,
-        "stream": False
-    }
-
-    try:
-        res = requests.post(OLLAMA_URL, json=payload, timeout=120)
-        return res.json()["response"].strip().upper()
-    except:
-        return "NON_TECH"
+# ---------- SIMPLE CODE DETECTOR (FAST) ----------
+def is_likely_code(text: str) -> bool:
+    indicators = [
+        "def ", "class ", "import ", "from ", "{", "}", ";",
+        "print(", "console.log", "function ", "#include"
+    ]
+    text = text.lower()
+    return any(i in text for i in indicators)
 
 
+# ---------- MAIN STREAMING ENDPOINT ----------
 @api_view(["POST"])
 def generate_documentation(request):
+    user_input = request.data.get("code", "").strip()
 
-    user_input = request.data.get("code", "")
+    if not user_input:
+        return Response("Empty input", status=400)
 
-    if not user_input.strip():
-        return Response({"documentation": "Empty input provided."})
+    is_code = is_likely_code(user_input)
 
-    category = classify_input(user_input)
-
-    # CODE → documentation
-    if "CODE" in category:
-        prompt = f"""
-You are a professional software documentation writer.
-Explain the code in clear structured markdown format.
+    prompt = (
+        f"""You are a professional software documentation writer.
+Explain the following code in clear structured Markdown.
+Use headings and fenced code blocks.
 
 Code:
 {user_input}
 """
-
-    # PROGRAMMING QUESTION → answer
-    elif "PROGRAMMING_QUESTION" in category:
-        prompt = f"""
-You are a helpful programming tutor.
-Answer clearly with examples.
+        if is_code
+        else
+        f"""You are a helpful programming tutor.
+Answer clearly in Markdown with examples.
 
 Question:
 {user_input}
 """
-
-    # NON TECH → reject
-    else:
-        return Response({
-            "documentation": "I only answer programming related queries."
-        })
+    )
 
     payload = {
-        "model": "qwen2.5-coder:7b",
+        "model": OLLAMA_MODEL,
         "prompt": prompt,
-        "stream": True
+        "stream": True,
     }
 
+    import time
+
     def stream():
+        last_sent = time.time()
+
         try:
-            response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
+            # 🚀 force headers flush
+            yield " "
 
-            for line in response.iter_lines():
-                if line:
-                    data = json.loads(line.decode("utf-8"))
-                    if "response" in data:
-                        yield data["response"]
+            r = requests.post(
+                OLLAMA_URL,
+                json=payload,
+                stream=True,
+                timeout=None
+            )
 
-        except:
-            yield "\nModel not responding. Check Ollama."
+            if r.status_code != 200:
+                yield f"\nModel error: {r.text}"
+                return
 
-    return StreamingHttpResponse(stream(), content_type="text/plain")
+            code_block_open = False
+
+            for line in r.iter_lines(decode_unicode=True):
+                now = time.time()
+
+                # 🫀 KEEP-ALIVE every 1 second
+                if now - last_sent > 1:
+                    yield "\n"
+                    last_sent = now
+
+                if not line:
+                    continue
+
+                try:
+                    data = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                chunk = data.get("response")
+                if not chunk:
+                    continue
+
+                if "\npython\n" in chunk:
+                    chunk = chunk.replace("\npython\n", "\n```python\n")
+                    code_block_open = True
+
+                yield chunk
+                last_sent = time.time()
+
+                if data.get("done") and code_block_open:
+                    yield "\n```"
+
+        except Exception as e:
+            yield f"\nError: {str(e)}"
 
 
+    response = StreamingHttpResponse(
+        stream(),
+        content_type="text/markdown; charset=utf-8"
+    )
+    response["Cache-Control"] = "no-cache"
+    response["X-Accel-Buffering"] = "no"
+    return response
+
+
+# ---------- PDF DOWNLOAD ----------
 @api_view(["POST"])
 def download_pdf(request):
     docs = request.data.get("docs", "")
@@ -121,4 +129,7 @@ def download_pdf(request):
         return Response({"error": "No documentation provided."})
 
     filename = create_pdf(docs)
-    return FileResponse(open(filename, "rb"), as_attachment=True)
+    response = FileResponse(open(filename, "rb"), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+

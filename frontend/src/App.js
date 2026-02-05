@@ -23,36 +23,54 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const generateDocs = async () => {
-  setDocs("");
-  setLoading(true);
+    setDocs("");
+    setLoading(true);
 
-  const response = await fetch("http://127.0.0.1:8000/api/generate/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ code }),
-  });
+    try {
+      const response = await fetch("/api/generate/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder("utf-8");
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(err || "Server error");
+      }
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
 
-    const chunk = decoder.decode(value);
-    setDocs(prev => prev + chunk);
-  }
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
 
-  setLoading(false);
-};
+          if (value) {
+            const chunk = decoder.decode(value, { stream: true });
+            setDocs(prev => prev + chunk);
+          }
+        }
+} catch (streamErr) {
+  console.warn("Stream interrupted:", streamErr);
+  // IMPORTANT: don't throw — allow partial docs
+}
+
+    } catch (err) {
+      console.error("Generate failed:", err);
+      alert("Error generating documentation: " + (err.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const downloadPDF = async () => {
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/pdf/",
+        "/api/pdf/",
         { docs },
         { responseType: "blob" }
       );
@@ -169,6 +187,7 @@ export default function App() {
             {/* BUTTON */}
             <div className="p-6 bg-gradient-to-t from-white/[0.02] to-transparent">
               <button
+                type="button"
                 onClick={generateDocs}
                 disabled={loading}
                 className="w-full relative group h-14 overflow-hidden rounded-xl bg-white text-black font-bold transition-all active:scale-[0.98]"
@@ -233,8 +252,13 @@ export default function App() {
                     </button>
 
                     <button
-                      onClick={downloadPDF}
+                      type="button"
                       className="flex items-center gap-1 text-xs font-bold text-green-400 hover:text-green-300"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        downloadPDF();
+                      }}
                     >
                       <Download size={14} />
                       EXPORT PDF

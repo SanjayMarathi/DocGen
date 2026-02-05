@@ -15,9 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/", include("generator.urls")),
+    # Serve the React app's index.html on all other non-API/static/admin routes
+    # Exclude paths that should be handled by static files or other services (static/, api/, admin/)
+    re_path(r'^(?!static/|api/|admin/).*$', TemplateView.as_view(template_name='index.html')),
 ]

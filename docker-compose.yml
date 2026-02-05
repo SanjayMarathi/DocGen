@@ -1,0 +1,24 @@
+version: "3.8"
+services:
+  ollama:
+    image: ollama/ollama:latest    # replace with trusted image if needed
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/var/lib/ollama
+
+  docgen:
+    build: .
+    image: rakshaknaik/docgen:latest
+    environment:
+      - OLLAMA_URL=http://ollama:11434/api/generate
+      - OLLAMA_MODEL=qwen2.5-coder:7b
+      - DJANGO_SETTINGS_MODULE=backend.settings
+    depends_on:
+      - ollama
+    ports:
+      - "8000:8000"
+
+volumes:
+  ollama_data:
