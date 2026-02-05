@@ -66,30 +66,10 @@ npm install
 npm start
 ```
 
-```
-
----
-
-## ⚙️ 2. Quick Start — Run Locally (Windows-friendly) 🔧
-
 ### Prerequisites
 - **Node.js + npm** (for frontend)
 - **Python 3.10+** (for backend)
 - **Ollama** installed and running locally (project uses `qwen2.5-coder:7b`)
-
-> Tip: Use PowerShell for the commands below on Windows.
-
-### Backend (Django REST)
-Open PowerShell and run:
-
-```powershell
-cd d:\projeks\internship\DocGen\backend
-python -m venv venv
-.\venv\Scripts\activate
-pip install django djangorestframework django-cors-headers requests reportlab
-python manage.py migrate
-python manage.py runserver 8000
-```
 
 - API endpoints:
   - POST `http://127.0.0.1:8000/api/generate/`  (streaming documentation)
@@ -97,35 +77,6 @@ python manage.py runserver 8000
 
 ### Ollama (Local LLM)
 The backend calls Ollama at `http://localhost:11434`.
-
-Typical commands (see Ollama docs for details):
-
-```bash
-# pull the model (if available)
-ollama pull qwen2.5-coder:7b
-# start the Ollama HTTP service
-ollama serve
-```
-
-If Ollama is not running you will see: `Model not responding. Check Ollama.` from the backend.
-
-### Frontend (React)
-Open a new terminal and run:
-
-```powershell
-cd d:\projeks\internship\DocGen\frontend
-npm install
-npm start
-```
-
-- The app runs at `http://localhost:3000` and communicates with the backend at `http://127.0.0.1:8000/`.
-- If you prefer not to change directories, you can run from the repo root:
-
-```powershell
-# install and start frontend from repo root
-npm --prefix frontend install
-npm --prefix frontend start
-```
 
 ### Quick test
 - Paste or upload code in the UI → Click **Generate Documentation**.
