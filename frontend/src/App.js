@@ -23,27 +23,31 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const generateDocs = async () => {
-    if (!code.trim()) return alert("Paste or upload code first!");
+  setDocs("");
+  setLoading(true);
 
-    setLoading(true);
+  const response = await fetch("http://127.0.0.1:8000/api/generate/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
 
-    try {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/generate/",
-        { code }
-      );
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8");
 
-      setDocs(res.data.documentation);
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
 
-      setTimeout(() => {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-      }, 200);
-    } catch (err) {
-      alert("Error generating documentation");
-    }
+    const chunk = decoder.decode(value);
+    setDocs(prev => prev + chunk);
+  }
 
-    setLoading(false);
-  };
+  setLoading(false);
+};
+
 
   const downloadPDF = async () => {
     try {

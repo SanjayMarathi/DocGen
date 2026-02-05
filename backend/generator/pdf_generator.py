@@ -4,81 +4,112 @@ from reportlab.platypus import (
     Spacer,
     ListFlowable,
     ListItem,
-    Preformatted,
+    Table,
+    TableStyle,
 )
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
 from reportlab.lib import colors
+import re
+
+
+def code_block(text):
+    """Create a clean wrapped code block"""
+
+    code_style = ParagraphStyle(
+        "Code",
+        fontName="Courier",
+        fontSize=9,
+        leading=12,
+        textColor=colors.HexColor("#1F2937"),
+    )
+
+    code_para = Paragraph(text.replace(" ", "&nbsp;").replace("\n", "<br/>"), code_style)
+
+    table = Table([[code_para]], colWidths=[450])
+    table.setStyle(
+        TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F3F4F6")),
+            ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#D1D5DB")),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ])
+    )
+
+    return table
+
+def clean_markdown(text):
+    # bold **text**
+    text = re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", text)
+
+    # italic *text*
+    text = re.sub(r"\*(.*?)\*", r"<i>\1</i>", text)
+
+    # inline code `text`
+    text = re.sub(r"`(.*?)`", r"<font name='Courier'>\1</font>", text)
+
+    # remove leftover markdown symbols
+    text = text.replace("###", "")
+    text = text.replace("##", "")
+
+    return text
+
 
 
 def create_pdf(text, filename="Documentation.pdf"):
 
-    # PDF Layout Settings
     doc = SimpleDocTemplate(
         filename,
         pagesize=letter,
-        rightMargin=50,
-        leftMargin=50,
-        topMargin=60,
-        bottomMargin=60,
+        rightMargin=60,
+        leftMargin=60,
+        topMargin=70,
+        bottomMargin=70,
     )
 
     styles = getSampleStyleSheet()
 
-    # Custom Styles
     title_style = ParagraphStyle(
-        "TitleStyle",
+        "title",
         parent=styles["Heading1"],
         fontSize=20,
-        textColor=colors.HexColor("#4F46E5"),
+        textColor=colors.HexColor("#111827"),
         spaceAfter=20,
     )
 
-    heading2_style = ParagraphStyle(
-        "Heading2Style",
+    h2 = ParagraphStyle(
+        "h2",
         parent=styles["Heading2"],
         fontSize=15,
-        textColor=colors.HexColor("#9333EA"),
-        spaceBefore=15,
-        spaceAfter=10,
-    )
-
-    heading3_style = ParagraphStyle(
-        "Heading3Style",
-        parent=styles["Heading3"],
-        fontSize=13,
-        textColor=colors.HexColor("#2563EB"),
-        spaceBefore=12,
+        textColor=colors.HexColor("#374151"),
+        spaceBefore=16,
         spaceAfter=8,
     )
 
-    body_style = ParagraphStyle(
-        "BodyStyle",
-        parent=styles["BodyText"],
-        fontSize=11,
-        leading=16,
+    h3 = ParagraphStyle(
+        "h3",
+        parent=styles["Heading3"],
+        fontSize=13,
+        textColor=colors.HexColor("#4B5563"),
+        spaceBefore=14,
         spaceAfter=6,
     )
 
-    code_style = ParagraphStyle(
-        "CodeStyle",
-        fontName="Courier",
-        fontSize=9.5,
-        leading=13,
-        backColor=colors.HexColor("#111827"),
-        textColor=colors.HexColor("#E5E7EB"),
-        leftIndent=12,
-        rightIndent=12,
-        spaceBefore=10,
-        spaceAfter=10,
+    body = ParagraphStyle(
+        "body",
+        parent=styles["BodyText"],
+        fontSize=11,
+        leading=16,
+        textColor=colors.HexColor("#111827"),
+        spaceAfter=6,
     )
 
     story = []
 
-    # Add Title Page Heading
-    story.append(Paragraph("AI Generated Project Documentation", title_style))
-    story.append(Spacer(1, 12))
+    story.append(Paragraph("AI Generated Documentation", title_style))
+    story.append(Spacer(1, 10))
 
     lines = text.split("\n")
 
@@ -88,13 +119,11 @@ def create_pdf(text, filename="Documentation.pdf"):
 
     for line in lines:
 
-        # Detect Code Block Start/End
+        # CODE BLOCK
         if line.strip().startswith("```"):
             if inside_code:
-                # End code block
-                story.append(
-                    Preformatted("\n".join(code_buffer), code_style)
-                )
+                story.append(code_block("\n".join(code_buffer)))
+                story.append(Spacer(1, 12))
                 code_buffer = []
                 inside_code = False
             else:
@@ -105,67 +134,33 @@ def create_pdf(text, filename="Documentation.pdf"):
             code_buffer.append(line)
             continue
 
-        # Heading Level 2
+        # HEADING 2
         if line.startswith("## "):
             if bullet_items:
-                story.append(
-                    ListFlowable(
-                        bullet_items,
-                        bulletType="bullet",
-                        leftIndent=20,
-                    )
-                )
+                story.append(ListFlowable(bullet_items, bulletType="bullet", leftIndent=20))
                 bullet_items = []
+            story.append(Paragraph(line[3:], h2))
 
-            story.append(Paragraph(line[3:], heading2_style))
-
-        # Heading Level 3
+        # HEADING 3
         elif line.startswith("### "):
             if bullet_items:
-                story.append(
-                    ListFlowable(
-                        bullet_items,
-                        bulletType="bullet",
-                        leftIndent=20,
-                    )
-                )
+                story.append(ListFlowable(bullet_items, bulletType="bullet", leftIndent=20))
                 bullet_items = []
+            story.append(Paragraph(line[4:], h3))
 
-            story.append(Paragraph(line[4:], heading3_style))
-
-        # Bullet Points
+        # BULLETS
         elif line.startswith("- "):
-            bullet_items.append(
-                ListItem(
-                    Paragraph(line[2:], body_style),
-                    leftIndent=10,
-                )
-            )
+            bullet_items.append(ListItem(Paragraph(line[2:], body)))
 
-        # Normal Paragraph
-        elif line.strip() != "":
+        # NORMAL TEXT
+        elif line.strip():
             if bullet_items:
-                story.append(
-                    ListFlowable(
-                        bullet_items,
-                        bulletType="bullet",
-                        leftIndent=20,
-                    )
-                )
+                story.append(ListFlowable(bullet_items, bulletType="bullet", leftIndent=20))
                 bullet_items = []
+            story.append(Paragraph(line, body))
 
-            story.append(Paragraph(line, body_style))
-
-    # Add remaining bullets
     if bullet_items:
-        story.append(
-            ListFlowable(
-                bullet_items,
-                bulletType="bullet",
-                leftIndent=20,
-            )
-        )
+        story.append(ListFlowable(bullet_items, bulletType="bullet", leftIndent=20))
 
     doc.build(story)
-
     return filename
