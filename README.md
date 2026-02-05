@@ -40,6 +40,63 @@ It works completely **offline** using:
 
 ## ✅ 1. Clone Repository
 
-```bash
+```powershell
+# Clone and enter repo
 git clone https://github.com/SanjayMarathi/DocGen.git
 cd DocGen
+```
+# Start Ollama (pull model if needed)
+```
+ollama pull qwen2.5-coder:7b
+ollama serve
+```
+# Start backend (in another terminal)
+```
+cd backend
+python -m venv venv
+.\venv\Scripts\activate
+pip install django djangorestframework django-cors-headers requests reportlab
+python manage.py migrate
+python manage.py runserver 8000
+```
+
+The venv activation above for powershell needs to be changed to venv/bin/activate if using bash.
+
+# Start frontend (in a new terminal)
+```
+cd frontend
+npm install
+npm start
+```
+
+### Prerequisites
+- **Node.js + npm** (for frontend)
+- **Python 3.10+** (for backend)
+- **Ollama** installed and running locally (project uses `qwen2.5-coder:7b`)
+
+- API endpoints:
+  - POST `http://127.0.0.1:8000/api/generate/`  (streaming documentation)
+  - POST `http://127.0.0.1:8000/api/pdf/`       (returns generated PDF)
+
+### Ollama (Local LLM)
+The backend calls Ollama at `http://localhost:11434`.
+
+### Quick test
+- Paste or upload code in the UI → Click **Generate Documentation**.
+- Click **EXPORT PDF** to download the generated PDF.
+
+### Troubleshooting ⚠️
+- `Model not responding. Check Ollama.` → Ensure Ollama is running and the model is available.
+- If the frontend or backend use different host/ports, update `frontend/src/App.js` and `backend/generator/views.py` accordingly.
+- CORS is already enabled in `backend/settings.py` (`CORS_ALLOW_ALL_ORIGINS = True`).
+
+### Convenience tip
+If you want `npm start` to start the frontend from the repo root, add this script to the root `package.json` under `scripts`:
+
+```json
+"scripts": {
+  "start": "npm --prefix frontend start"
+}
+```
+
+---
