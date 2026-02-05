@@ -40,6 +40,109 @@ It works completely **offline** using:
 
 ## ✅ 1. Clone Repository
 
-```bash
+```powershell
+# Clone and enter repo
 git clone https://github.com/SanjayMarathi/DocGen.git
 cd DocGen
+```
+# Start Ollama (pull model if needed)
+```
+ollama pull qwen2.5-coder:7b
+ollama serve
+```
+# Start backend (in another terminal)
+```
+cd backend
+python -m venv venv
+.\venv\Scripts\activate (Powershell) or venv/bin/activate(bash)
+pip install django djangorestframework django-cors-headers requests reportlab
+python manage.py migrate
+python manage.py runserver 8000
+```
+# Start frontend (in a new terminal)
+```
+cd frontend
+npm install
+npm start
+```
+
+```
+
+---
+
+## ⚙️ 2. Quick Start — Run Locally (Windows-friendly) 🔧
+
+### Prerequisites
+- **Node.js + npm** (for frontend)
+- **Python 3.10+** (for backend)
+- **Ollama** installed and running locally (project uses `qwen2.5-coder:7b`)
+
+> Tip: Use PowerShell for the commands below on Windows.
+
+### Backend (Django REST)
+Open PowerShell and run:
+
+```powershell
+cd d:\projeks\internship\DocGen\backend
+python -m venv venv
+.\venv\Scripts\activate
+pip install django djangorestframework django-cors-headers requests reportlab
+python manage.py migrate
+python manage.py runserver 8000
+```
+
+- API endpoints:
+  - POST `http://127.0.0.1:8000/api/generate/`  (streaming documentation)
+  - POST `http://127.0.0.1:8000/api/pdf/`       (returns generated PDF)
+
+### Ollama (Local LLM)
+The backend calls Ollama at `http://localhost:11434`.
+
+Typical commands (see Ollama docs for details):
+
+```bash
+# pull the model (if available)
+ollama pull qwen2.5-coder:7b
+# start the Ollama HTTP service
+ollama serve
+```
+
+If Ollama is not running you will see: `Model not responding. Check Ollama.` from the backend.
+
+### Frontend (React)
+Open a new terminal and run:
+
+```powershell
+cd d:\projeks\internship\DocGen\frontend
+npm install
+npm start
+```
+
+- The app runs at `http://localhost:3000` and communicates with the backend at `http://127.0.0.1:8000/`.
+- If you prefer not to change directories, you can run from the repo root:
+
+```powershell
+# install and start frontend from repo root
+npm --prefix frontend install
+npm --prefix frontend start
+```
+
+### Quick test
+- Paste or upload code in the UI → Click **Generate Documentation**.
+- Click **EXPORT PDF** to download the generated PDF.
+
+### Troubleshooting ⚠️
+- `Model not responding. Check Ollama.` → Ensure Ollama is running and the model is available.
+- If the frontend or backend use different host/ports, update `frontend/src/App.js` and `backend/generator/views.py` accordingly.
+- CORS is already enabled in `backend/settings.py` (`CORS_ALLOW_ALL_ORIGINS = True`).
+
+### Convenience tip
+If you want `npm start` to start the frontend from the repo root, add this script to the root `package.json` under `scripts`:
+
+```json
+"scripts": {
+  "start": "npm --prefix frontend start"
+}
+```
+
+---
