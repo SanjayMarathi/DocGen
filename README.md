@@ -54,11 +54,14 @@ ollama serve
 ```
 cd backend
 python -m venv venv
-.\venv\Scripts\activate (Powershell) or venv/bin/activate(bash)
+.\venv\Scripts\activate
 pip install django djangorestframework django-cors-headers requests reportlab
 python manage.py migrate
 python manage.py runserver 8000
 ```
+
+The venv activation above for powershell needs to be changed to venv/bin/activate if using bash.
+
 # Start frontend (in a new terminal)
 ```
 cd frontend
