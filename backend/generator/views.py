@@ -4,14 +4,74 @@ from rest_framework.response import Response
 from django.http import StreamingHttpResponse, FileResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-import requests, json, socket
+import requests
+import json
+import socket
+import wikipedia # Uses the library as you requested
+
 from .models import DocHistory
-from .pdf_generator import create_pdf 
+from .pdf_generator import create_pdf
 from .docx_generator import create_docx
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
-# --- AUTHENTICATION ---
+# =========================================================
+# HELPER: INTERNET CHECK
+# =========================================================
+def internet_available():
+    try:
+        socket.create_connection(("8.8.8.8", 53), timeout=2)
+        return True
+    except:
+        return False
+
+# =========================================================
+# HELPER: DECIDE IF REAL DATA REQUIRED
+# =========================================================
+def needs_real_data(text):
+    keywords = [
+        "who", "when", "where", "age", "born",
+        "stats", "record", "population", "president",
+        "prime minister", "version", "release",
+        "latest", "data", "information", "history", "summary"
+    ]
+    text = text.lower()
+    return any(k in text for k in keywords)
+
+# =========================================================
+# HELPER: RELIABLE WIKIPEDIA FETCH (User's Logic)
+# =========================================================
+def fetch_wikipedia(query):
+    try:
+        wikipedia.set_lang("en")
+
+        # Step 1: search closest matching article
+        results = wikipedia.search(query)
+        if not results: return ""
+
+        # Step 2: best match
+        title = results[0]
+
+        # Step 3: fetch page
+        page = wikipedia.page(title, auto_suggest=False)
+
+        # Step 4: trim content for LLM
+        content = page.content[:6000]
+
+        return f"Verified Topic: {page.title}\n\n{content}"
+
+    except wikipedia.exceptions.DisambiguationError as e:
+        try:
+            page = wikipedia.page(e.options[0])
+            return f"Verified Topic: {page.title}\n\n{page.content[:6000]}"
+        except: return ""
+    except Exception as e:
+        print(f"Wiki Error: {e}")
+        return ""
+
+# =========================================================
+# AUTHENTICATION & USER MANAGEMENT (Restored)
+# =========================================================
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register_user(request):
@@ -27,7 +87,6 @@ def register_user(request):
 def get_user_info(request):
     return Response({"username": request.user.username})
 
-# --- HISTORY ---
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_history(request):
@@ -40,67 +99,117 @@ def delete_history(request, pk):
     get_object_or_404(DocHistory, pk=pk, user=request.user).delete()
     return Response({"message": "Deleted"})
 
-# --- SYSTEM ---
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def connection_status(request):
-    try: socket.create_connection(("8.8.8.8", 53), timeout=2); return Response({"online": True})
-    except: return Response({"online": False})
+    return Response({"online": internet_available()})
 
-# --- GENERATION (ROBUST STREAMING) ---
+# =========================================================
+# MAIN GENERATION LOGIC
+# =========================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def generate_documentation(request):
     user_input = request.data.get("code", "").strip()
-    title = " ".join(user_input.split()[:5])[:30] or "New Doc"
 
-    # 1. Create History Entry
+    if not user_input:
+        return StreamingHttpResponse("Please enter a topic.", content_type="text/plain")
+    
+    # 1. Create DB Entry (Required for Frontend)
+    title = " ".join(user_input.split()[:5])[:30] or "New Doc"
     doc_entry = DocHistory.objects.create(user=request.user, topic=title, content="")
 
-    prompt = f"""
-    System: Technical Writer.
-    Task: Document the code below.
-    RULES:
-    1. Use '# Title' and '## Section'
-    2. Use bullet points
-    3. Wrap variables in backticks (`var`)
-    4. Use code blocks (```)
-    Input: {user_input}
-    """
-    
+    online = internet_available()
+    web_context = ""
+
+    # 2. Smart Context Fetching
+    # Logic: If strict keywords present OR input is short (Topic lookup), fetch Wiki
+    if online and (needs_real_data(user_input) or len(user_input) < 150):
+        web_context = fetch_wikipedia(user_input)
+
+    # 3. Prompt Engineering (User's Exact Prompts)
+    if web_context:
+        prompt = f"""
+        You are a documentation formatter AI.
+
+        IMPORTANT RULE:
+        You are NOT allowed to change ANY factual values.
+        Do NOT calculate. Do NOT estimate. Do NOT rephrase numbers.
+        Your job is ONLY to organize the given verified data into clean documentation.
+        You must copy all numbers EXACTLY as provided.
+
+        -------------------------------------
+        VERIFIED DATA (IMMUTABLE SOURCE)
+        -------------------------------------
+        {web_context}
+        -------------------------------------
+
+        TASK:
+        Convert the above information into structured documentation using:
+        - Clear headings
+        - Bullet points
+        - Sections
+        
+        You are formatting — NOT rewriting.
+        """
+        warning = "online"
+    else:
+        prompt = f"""
+        You are a professional documentation writer.
+        Explain the topic in a structured documentation style.
+        Rules:
+        - Use headings and sections
+        - Use bullet points where useful
+        - Do not hallucinate statistics
+        Topic: {user_input}
+        """
+        warning = "offline"
+
     payload = {"model": "qwen2.5-coder:7b", "prompt": prompt, "stream": True}
 
     def stream():
-        # 2. Yield ID first with explicit newline
+        # 4. Critical: Yield ID first
         yield json.dumps({"id": doc_entry.id}) + "\n"
-        
+
         full_text = ""
         try:
-            with requests.post(OLLAMA_URL, json=payload, stream=True) as r:
-                for line in r.iter_lines():
-                    if line:
-                        try:
-                            chunk = json.loads(line).get("response", "")
-                            full_text += chunk
-                            yield chunk
-                        except: pass
+            response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
+            for line in response.iter_lines():
+                if line:
+                    data = json.loads(line.decode("utf-8"))
+                    if "response" in data:
+                        chunk = data["response"]
+                        full_text += chunk
+                        yield chunk
             
-            # 3. Save final content
+            # 5. Save final content
             if full_text:
                 doc_entry.content = full_text
                 doc_entry.save()
-        except: 
-            yield "\n[Error: AI Service Offline or Unreachable]"
 
-    return StreamingHttpResponse(stream(), content_type="text/plain")
+        except Exception as e:
+            yield "\nModel not responding. Ensure Ollama is running."
 
-# --- DOWNLOADS ---
+    resp = StreamingHttpResponse(stream(), content_type="text/plain")
+    resp["X-AI-Warning"] = warning
+    resp["Cache-Control"] = "no-cache"
+    return resp
+
+# =========================================================
+# DOWNLOADS
+# =========================================================
 @api_view(["POST"])
 def download_pdf(request):
-    try: return FileResponse(create_pdf(request.data.get("docs", "")), as_attachment=True, filename="Doc.pdf")
+    docs = request.data.get("docs", "")
+    if not docs.strip(): return Response({"error": "No documentation provided."})
+    try:
+        filename = create_pdf(docs)
+        return FileResponse(open(filename, "rb"), as_attachment=True, filename="Doc.pdf")
     except Exception as e: return Response({"error": str(e)}, status=500)
 
 @api_view(["POST"])
 def download_docx(request):
-    try: return FileResponse(create_docx(request.data.get("docs", "")), as_attachment=True, filename="Doc.docx")
+    docs = request.data.get("docs", "")
+    try: 
+        return FileResponse(create_docx(docs), as_attachment=True, filename="Doc.docx")
     except Exception as e: return Response({"error": str(e)}, status=500)
