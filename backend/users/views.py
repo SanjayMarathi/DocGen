@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .serializers import RegisterSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+
 # Create your views here.
 
 @api_view(["POST"])
@@ -23,8 +25,13 @@ def login_user(request):
     user = authenticate(username=username, password=password)
 
     if user:
-        login(request, user)
-        return Response({"message": "Logged in"})
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'message': 'Logged in'
+        })
     return Response({"error": "Invalid credentials"}, status=401)
 
 
