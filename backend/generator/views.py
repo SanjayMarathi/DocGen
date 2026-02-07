@@ -1,197 +1,114 @@
-from rest_framework.decorators import api_view
-from django.http import StreamingHttpResponse, FileResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-import requests
-import json
-import socket
-import wikipedia
-
-from .pdf_generator import create_pdf
+from django.http import StreamingHttpResponse, FileResponse
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+import requests, json, socket
+from .models import DocHistory
+# Ensure you have the generator files from the previous step
+from .pdf_generator import create_pdf 
+from .docx_generator import create_docx
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
+# --- 1. AUTHENTICATION (RESTORED) ---
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def register_user(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+    if not username or not password:
+        return Response({"error": "Username and Password required"}, 400)
+    if User.objects.filter(username=username).exists():
+        return Response({"error": "Username already taken"}, 400)
+    User.objects.create_user(username=username, password=password)
+    return Response({"message": "User created successfully"})
 
-# =========================================================
-# REAL INTERNET CHECK (NOT LOCAL NETWORK)
-# =========================================================
-def internet_available():
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_user_info(request):
+    return Response({"username": request.user.username})
+
+# --- 2. HISTORY (RESTORED) ---
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_history(request):
+    data = DocHistory.objects.filter(user=request.user).order_by('-created_at').values()
+    return Response(list(data))
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_history(request, pk):
+    get_object_or_404(DocHistory, pk=pk, user=request.user).delete()
+    return Response({"message": "Deleted"})
+
+# --- 3. SYSTEM ---
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def connection_status(request):
     try:
         socket.create_connection(("8.8.8.8", 53), timeout=2)
-        return True
+        return Response({"online": True})
     except:
-        return False
+        return Response({"online": False})
 
-
-# =========================================================
-# CONNECTION STATUS API (used by frontend badge)
-# =========================================================
-@api_view(["GET"])
-def connection_status(request):
-    return Response({"online": internet_available()})
-
-
-# =========================================================
-# DECIDE IF FACTUAL DATA REQUIRED
-# =========================================================
-def needs_real_data(text):
-    keywords = [
-        "who", "when", "where", "age", "born",
-        "stats", "record", "population", "president",
-        "prime minister", "version", "release",
-        "latest", "data", "information"
-    ]
-    text = text.lower()
-    return any(k in text for k in keywords)
-
-
-# =========================================================
-# RELIABLE WIKIPEDIA FETCH
-# =========================================================
-def fetch_wikipedia(query):
-    try:
-        wikipedia.set_lang("en")
-
-        # Step 1: search closest matching article
-        results = wikipedia.search(query)
-
-        if not results:
-            return ""
-
-        # Step 2: best match
-        title = results[0]
-
-        # Step 3: fetch page
-        page = wikipedia.page(title, auto_suggest=False)
-
-        # Step 4: trim content for LLM
-        content = page.content[:6000]
-
-        return f"Verified Topic: {page.title}\n\n{content}"
-
-    except wikipedia.exceptions.DisambiguationError as e:
-        try:
-            page = wikipedia.page(e.options[0])
-            return page.content[:6000]
-        except:
-            return ""
-
-    except Exception:
-        return ""
-
-
-# =========================================================
-# MAIN DOCUMENTATION GENERATION
-# =========================================================
+# --- 4. GENERATION (FIXED STREAM) ---
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def generate_documentation(request):
-
     user_input = request.data.get("code", "").strip()
+    # Auto-title
+    title = " ".join(user_input.split()[:5])[:30]
+    if not title: title = "New Doc"
 
-    if not user_input:
-        return StreamingHttpResponse(
-            "Please enter a topic to generate documentation.",
-            content_type="text/plain"
-        )
+    # Create History Entry IMMEDIATELY so it appears in sidebar
+    doc_entry = DocHistory.objects.create(user=request.user, topic=title, content="")
 
-    online = internet_available()
-    web_context = ""
+    prompt = f"""
+    System: Technical Writer.
+    Task: Document the code below.
+    RULES:
+    1. Use '# Title' and '## Section'
+    2. Use bullet points
+    3. Wrap ALL variables in backticks (`var`)
+    4. Use code blocks (```)
+    Input: {user_input}
+    """
+    
+    payload = {"model": "qwen2.5-coder:7b", "prompt": prompt, "stream": True}
 
-    # fetch real data only when needed
-    if online and needs_real_data(user_input):
-        web_context = fetch_wikipedia(user_input)
-
-    # ---------------- PROMPT ----------------
-    if web_context:
-
-        prompt = f"""
-You are a documentation formatter AI.
-
-IMPORTANT RULE:
-You are NOT allowed to change ANY factual values.
-Do NOT calculate.
-Do NOT estimate.
-Do NOT rephrase numbers.
-Do NOT summarize statistics.
-
-Your job is ONLY to organize the given verified data into clean documentation.
-
-You must copy all numbers EXACTLY as provided.
-
-If you change even one number → the answer is incorrect.
-
--------------------------------------
-VERIFIED DATA (IMMUTABLE SOURCE)
--------------------------------------
-{web_context}
--------------------------------------
-
-TASK:
-Convert the above information into structured documentation using:
-
-- Clear headings
-- Bullet points
-- Sections
-- Proper readability
-
-You are formatting — NOT rewriting.
-"""
-        warning = "online"
-
-
-    else:
-
-        prompt = f"""
-You are a professional documentation writer.
-
-Explain the topic in a structured documentation style.
-
-Rules:
-- Use headings and sections
-- Use bullet points where useful
-- If real-world numbers are unknown, explain conceptually
-- Do not hallucinate statistics
-
-Topic:
-{user_input}
-"""
-        warning = "offline"
-
-    payload = {
-        "model": "qwen2.5-coder:7b",
-        "prompt": prompt,
-        "stream": True
-    }
-
-    # ---------------- STREAM RESPONSE ----------------
     def stream():
+        # Send ID first
+        yield json.dumps({"id": doc_entry.id}) + "\n"
+        
+        full_text = ""
         try:
-            response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
+            with requests.post(OLLAMA_URL, json=payload, stream=True) as r:
+                for line in r.iter_lines():
+                    if line:
+                        chunk = json.loads(line).get("response", "")
+                        full_text += chunk
+                        yield chunk
+            
+            # Save final content
+            doc_entry.content = full_text
+            doc_entry.save()
+        except: yield "Error: AI not responding."
 
-            for line in response.iter_lines():
-                if line:
-                    data = json.loads(line.decode("utf-8"))
-                    if "response" in data:
-                        yield data["response"]
+    return StreamingHttpResponse(stream(), content_type="text/plain")
 
-        except Exception:
-            yield "\nModel not responding. Ensure Ollama is running."
-
-    resp = StreamingHttpResponse(stream(), content_type="text/plain")
-    resp["X-AI-Warning"] = warning
-    resp["Cache-Control"] = "no-cache"
-    return resp
-
-
-# =========================================================
-# PDF DOWNLOAD
-# =========================================================
+# --- 5. DOWNLOADS ---
 @api_view(["POST"])
 def download_pdf(request):
+    try:
+        buffer = create_pdf(request.data.get("docs", ""))
+        return FileResponse(buffer, as_attachment=True, filename="Documentation.pdf")
+    except Exception as e: return Response({"error": str(e)}, status=500)
 
-    docs = request.data.get("docs", "")
-
-    if not docs.strip():
-        return Response({"error": "No documentation provided."})
-
-    filename = create_pdf(docs)
-    return FileResponse(open(filename, "rb"), as_attachment=True)
+@api_view(["POST"])
+def download_docx(request):
+    try:
+        buffer = create_docx(request.data.get("docs", ""))
+        return FileResponse(buffer, as_attachment=True, filename="Documentation.docx")
+    except Exception as e: return Response({"error": str(e)}, status=500)
