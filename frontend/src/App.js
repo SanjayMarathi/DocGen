@@ -60,20 +60,35 @@ export default function App() {
   // --- AUTH ---
   const handleAuth = async (e) => {
     e.preventDefault();
-    const isRegister = e.target.querySelector("button[type=submit]").innerText === "Register";
+    // FIX: specific detection of the button clicked
+    const submitter = e.nativeEvent.submitter;
+    const isRegister = submitter.innerText === "Register";
+    
     const user = e.target[0].value;
     const pass = e.target[1].value;
+
     try {
         const endpoint = isRegister ? "register/" : "login/";
         const res = await axios.post(`${API_BASE}${endpoint}`, { username: user, password: pass });
+        
         if (isRegister) {
-            alert("Registered! Please login.");
+            alert("Registered successfully! Please login.");
         } else {
-            localStorage.setItem("token", res.data.access);
-            setToken(res.data.access);
-            setTimeout(() => { fetchUser(); fetchHistory(); }, 50);
+            // FIX: Ensure we actually catch the token before setting state
+            if (res.data.access) {
+                localStorage.setItem("token", res.data.access);
+                setToken(res.data.access);
+                // Reset connection check immediately after login
+                checkConnection();
+                setTimeout(() => { fetchUser(); fetchHistory(); }, 50);
+            } else {
+                alert("Login failed: No token received");
+            }
         }
-    } catch { alert("Auth Failed"); }
+    } catch (err) { 
+        console.error(err);
+        alert(err.response?.data?.error || "Auth Failed"); 
+    }
   };
 
   // --- CORE LOGIC ---
@@ -179,11 +194,11 @@ export default function App() {
       <div className={`w-full max-w-md ${colors.card} border ${colors.border} p-8 rounded-3xl shadow-xl`}>
         <h1 className="text-3xl font-bold text-center mb-6">DocGen AI</h1>
         <form onSubmit={handleAuth} className="space-y-4">
-          <input className={`w-full p-3 rounded-xl ${colors.input} border ${colors.border} outline-none`} placeholder="Username"/>
-          <input type="password" className={`w-full p-3 rounded-xl ${colors.input} border ${colors.border} outline-none`} placeholder="Password"/>
+          <input className={`w-full p-3 rounded-xl ${colors.input} border ${colors.border} outline-none`} placeholder="Username" required />
+          <input type="password" className={`w-full p-3 rounded-xl ${colors.input} border ${colors.border} outline-none`} placeholder="Password" required />
           <div className="flex gap-2">
-             <button type="submit" onClick={(e) => {e.target.innerText="Login"}} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500">Login</button>
-             <button type="submit" onClick={(e) => {e.target.innerText="Register"}} className="flex-1 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20">Register</button>
+             <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500">Login</button>
+             <button type="submit" className="flex-1 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20">Register</button>
           </div>
         </form>
       </div>
@@ -201,7 +216,7 @@ export default function App() {
         </div>
         <div className="flex items-center gap-4">
            <button onClick={toggleTheme} className="hover:text-blue-500">{theme === 'dark' ? <Sun size={18}/> : <Moon size={18}/>}</button>
-           <button onClick={() => {localStorage.removeItem("token"); setToken(null);}} className="hover:text-red-500"><LogOut size={18}/></button>
+           <button onClick={logout} className="hover:text-red-500"><LogOut size={18}/></button>
         </div>
       </nav>
 
@@ -248,10 +263,10 @@ export default function App() {
                       h2: ({node, ...props}) => <h2 className="text-xl font-semibold mt-8 mb-4 text-purple-400" {...props}/>,
                       h3: ({node, ...props}) => <h3 className="text-lg font-medium mt-6 mb-3 text-gray-200" {...props}/>,
                       
-                      // Proper Paragraphs (Fixes "breaking text")
+                      // Proper Paragraphs
                       p: ({node, ...props}) => <p className="mb-4 leading-7 text-gray-300" {...props}/>,
                       
-                      // Lists (Proper indentation)
+                      // Lists
                       ul: ({node, ...props}) => <ul className="list-disc list-outside ml-6 mb-4 space-y-1 text-gray-300" {...props}/>,
                       ol: ({node, ...props}) => <ol className="list-decimal list-outside ml-6 mb-4 space-y-1 text-gray-300" {...props}/>,
                       li: ({node, ...props}) => <li className="pl-1" {...props}/>,
@@ -262,7 +277,6 @@ export default function App() {
                       // "Black Box" Code Blocks
                       pre: ({node, ...props}) => (
                         <div className="relative my-6 rounded-lg overflow-hidden bg-[#1e1e1e] border border-white/10 shadow-xl">
-                          {/* Terminal Header */}
                           <div className="flex items-center px-4 py-2 bg-[#2d2d2d] border-b border-white/5">
                             <div className="flex gap-1.5">
                               <div className="w-3 h-3 rounded-full bg-red-500/20"/>
@@ -274,7 +288,6 @@ export default function App() {
                         </div>
                       ),
                       
-                      // Smart Inline vs Block Code
                       code: ({node, inline, className, children, ...props}) => {
                         if (inline) {
                           return <code className="bg-white/10 text-orange-300 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>;
