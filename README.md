@@ -9,6 +9,7 @@ It works completely **offline** using:
 - **Django REST Backend**
 - **React + Tailwind Frontend**
 - **PDF Export Support**
+- **Doc Export Support**
 
 ---
 
