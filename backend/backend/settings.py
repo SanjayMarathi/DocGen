@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     "corsheaders",
 
     "generator",
-    "users",
+    'rest_framework_simplejwt',
 ]
 
 
@@ -32,8 +32,6 @@ MIDDLEWARE = [
 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -112,18 +110,14 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOW_HEADERS = ["*"]
 CORS_EXPOSE_HEADERS = ["X-AI-Warning"]
 
-
-# Cookies must be cross-site
-SESSION_COOKIE_SAMESITE = None
-SESSION_COOKIE_SECURE = False
-
-CSRF_COOKIE_SAMESITE = None
-CSRF_COOKIE_SECURE = False
-
-
-# ---------------- DRF AUTH (ONLY SESSION) ----------------
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-    ),
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }

@@ -1,13 +1,31 @@
 from django.urls import path
-from .views import generate_documentation, download_pdf, connection_status
-from .auth_views import register, login
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .views import (
+    register_user, 
+    get_user_info, 
+    connection_status,
+    generate_documentation, 
+    get_history, 
+    delete_history, 
+    download_pdf, 
+    download_docx
+)
 
 urlpatterns = [
-    path("generate/", generate_documentation),
-    path("pdf/", download_pdf),
+    # Auth
+    path("register/", register_user),
+    path("login/", TokenObtainPairView.as_view()),
+    path("user/", get_user_info),
+    
+    # System
     path("status/", connection_status),
-
-    # authentication
-    path("auth/register/", register),
-    path("auth/login/", login),
+    
+    # Core
+    path("generate/", generate_documentation),
+    path("history/", get_history),
+    path("history/<int:pk>/delete/", delete_history),
+    
+    # Downloads
+    path("pdf/", download_pdf),
+    path("docx/", download_docx),
 ]
