@@ -5,6 +5,9 @@ import requests
 import json
 import socket
 import wikipedia
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+
 
 from .pdf_generator import create_pdf
 
@@ -82,6 +85,7 @@ def fetch_wikipedia(query):
 # =========================================================
 # MAIN DOCUMENTATION GENERATION
 # =========================================================
+@permission_classes([IsAuthenticated])
 @api_view(["POST"])
 def generate_documentation(request):
 
