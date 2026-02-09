@@ -201,11 +201,24 @@ def generate_documentation(request):
 @api_view(["POST"])
 def download_pdf(request):
     docs = request.data.get("docs", "")
-    if not docs.strip(): return Response({"error": "No documentation provided."})
+    if not docs.strip():
+        return Response({"error": "No documentation provided."})
+
     try:
-        filename = create_pdf(docs)
-        return FileResponse(open(filename, "rb"), as_attachment=True, filename="Doc.pdf")
-    except Exception as e: return Response({"error": str(e)}, status=500)
+        pdf_buffer = create_pdf(docs)  # already BytesIO
+        pdf_buffer.seek(0)
+
+        return FileResponse(
+            pdf_buffer,
+            as_attachment=True,
+            filename="Doc.pdf",
+            content_type="application/pdf"
+        )
+
+    except Exception as e:
+        print("PDF ERROR:", str(e))
+        return Response({"error": str(e)}, status=500)
+
 
 @api_view(["POST"])
 def download_docx(request):

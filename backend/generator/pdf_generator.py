@@ -1,59 +1,204 @@
 from io import BytesIO
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem, Table, TableStyle
+from reportlab.platypus import *
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
 from reportlab.lib import colors
 import re
 
-def code_block(text):
-    code_style = ParagraphStyle("Code", fontName="Courier", fontSize=9, leading=12, textColor=colors.HexColor("#1F2937"))
-    formatted = text.replace(" ", "&nbsp;").replace("\n", "<br/>")
-    code_para = Paragraph(formatted, code_style)
-    table = Table([[code_para]], colWidths=[450])
-    table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F3F4F6")), ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#D1D5DB")), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8), ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6)]))
-    return table
 
-def clean_markdown(text):
-    text = re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", text)
-    text = re.sub(r"\*(.*?)\*", r"<i>\1</i>", text)
-    text = re.sub(r"`(.*?)`", r"<font face='Courier' color='#dc2626'>\1</font>", text)
+# ---------- INLINE FORMAT ----------
+def md_inline(text):
+
+    text = re.sub(r'\[(.*?)\]\((.*?)\)', r"<link href='\2'><u>\1</u></link>", text)
+
+    text = re.sub(
+        r'`(.*?)`',
+        r"<font face='Courier' backColor='#EEF2F7'>\1</font>",
+        text
+    )
+
+    types = ["long long","size_t","double","float","char","bool","long","int"]
+    for t in types:
+        text = re.sub(
+            rf'\b{re.escape(t)}\b',
+            rf"<font face='Courier' color='#0A58CA'><b>{t}</b></font>",
+            text
+        )
+
+    text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
+    text = re.sub(r'\*(.*?)\*', r'<i>\1</i>', text)
+
     return text
 
-def create_pdf(text):
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=60, leftMargin=60, topMargin=70, bottomMargin=70)
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle("title", parent=styles["Heading1"], fontSize=20, textColor=colors.HexColor("#111827"), spaceAfter=20)
-    h2 = ParagraphStyle("h2", parent=styles["Heading2"], fontSize=15, textColor=colors.HexColor("#374151"), spaceBefore=16, spaceAfter=8)
-    h3 = ParagraphStyle("h3", parent=styles["Heading3"], fontSize=13, textColor=colors.HexColor("#4B5563"), spaceBefore=14, spaceAfter=6)
-    body = ParagraphStyle("body", parent=styles["BodyText"], fontSize=11, leading=16, textColor=colors.HexColor("#111827"), spaceAfter=6)
 
-    story = [Paragraph("Documentation", title_style), Spacer(1, 10)]
-    if not text: text = "No content."
-    lines = text.split("\n")
-    bullet_items = []
-    inside_code = False
-    code_buffer = []
+# ---------- CODE BLOCK ----------
+def code_block(code):
+
+    inner = Preformatted(code, ParagraphStyle(
+        "code_inner",
+        fontName="Courier",
+        fontSize=9,
+        leading=13,
+        textColor=colors.HexColor("#1F2937")
+    ))
+
+    box = Table([[inner]], colWidths=[450])
+    box.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),colors.HexColor("#F7F7F8")),
+        ("BOX",(0,0),(-1,-1),0.5,colors.HexColor("#E5E7EB")),
+        ("LEFTPADDING",(0,0),(-1,-1),10),
+        ("RIGHTPADDING",(0,0),(-1,-1),10),
+        ("TOPPADDING",(0,0),(-1,-1),8),
+        ("BOTTOMPADDING",(0,0),(-1,-1),8),
+    ]))
+
+    return box
+
+
+# ---------- PDF ----------
+def create_pdf(text):
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=60,leftMargin=60,
+        topMargin=70,bottomMargin=70
+    )
+
+    styles = getSampleStyleSheet()
+
+    # colored headings
+    TITLE = ParagraphStyle(
+        "TITLE",
+        parent=styles["Heading1"],
+        fontSize=20,
+        textColor=colors.HexColor("#0B3D91"),
+        spaceBefore=18,
+        spaceAfter=8
+    )
+
+    H2 = ParagraphStyle(
+        "H2",
+        parent=styles["Heading2"],
+        fontSize=16,
+        textColor=colors.HexColor("#1F7A8C"),
+        spaceBefore=16,
+        spaceAfter=6
+    )
+
+    H3 = ParagraphStyle(
+        "H3",
+        parent=styles["Heading3"],
+        fontSize=14,
+        textColor=colors.HexColor("#8A5A44"),
+        spaceBefore=14,
+        spaceAfter=4
+    )
+
+    BODY = ParagraphStyle(
+        "BODY",
+        parent=styles["BodyText"],
+        fontSize=11,
+        leading=16.5,
+        alignment=TA_JUSTIFY,
+        spaceAfter=6
+    )
+
+    story=[]
+    lines=text.split("\n")
+
+    # remove LLM endings
+    lines = [l for l in lines if l.strip().lower() not in [
+        "end of documentation",
+        "end of document",
+        "documentation ends here",
+        "end."
+    ]]
+
+    bullets=[]
+    table=[]
+    code=[]
+    in_code=False
 
     for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            if inside_code:
-                if code_buffer: story.append(code_block("\n".join(code_buffer))); story.append(Spacer(1, 12))
-                code_buffer = []; inside_code = False
-            else:
-                if bullet_items: story.append(ListFlowable(bullet_items, bulletType="bullet", leftIndent=20)); bullet_items = []
-                inside_code = True
-            continue
-        if inside_code: code_buffer.append(line); continue
-        if not stripped.startswith("- ") and bullet_items: story.append(ListFlowable(bullet_items, bulletType="bullet", leftIndent=20)); bullet_items = []
-        if line.startswith("## "): story.append(Paragraph(clean_markdown(line[3:]), h2))
-        elif line.startswith("### "): story.append(Paragraph(clean_markdown(line[4:]), h3))
-        elif line.startswith("- "): bullet_items.append(ListItem(Paragraph(clean_markdown(line[2:]), body)))
-        elif stripped: story.append(Paragraph(clean_markdown(line), body))
+        stripped=line.rstrip()
 
-    if bullet_items: story.append(ListFlowable(bullet_items, bulletType="bullet", leftIndent=20))
-    try: doc.build(story)
-    except: doc.build([Paragraph("Error", body)])
+        if stripped.strip()=="---":
+            continue
+
+        # code
+        if stripped.strip().startswith("```"):
+            if in_code:
+                story.append(code_block("\n".join(code)))
+                story.append(Spacer(1,8))
+                code=[]
+                in_code=False
+            else:
+                in_code=True
+            continue
+
+        if in_code:
+            code.append(line)
+            continue
+
+        # table
+        if "|" in stripped and stripped.count("|")>=2:
+            table.append(stripped)
+            continue
+        else:
+            if table:
+                data=[]
+                for row in table:
+                    cols=[md_inline(c.strip()) for c in row.strip("|").split("|")]
+                    if all(set(c)<=set("-:") for c in cols):
+                        continue
+                    data.append([Paragraph(c,BODY) for c in cols])
+
+                if data:
+                    tbl=Table(data, repeatRows=1)
+                    tbl.setStyle(TableStyle([
+                        ("GRID",(0,0),(-1,-1),0.4,colors.grey),
+                        ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#F1F3F5")),
+                        ("LEFTPADDING",(0,0),(-1,-1),6),
+                        ("RIGHTPADDING",(0,0),(-1,-1),6),
+                        ("TOPPADDING",(0,0),(-1,-1),4),
+                        ("BOTTOMPADDING",(0,0),(-1,-1),4),
+                    ]))
+                    story.append(tbl)
+                    story.append(Spacer(1,8))
+                table=[]
+
+        # headings
+        if stripped.startswith("# "):
+            story.append(Paragraph(md_inline(stripped[2:]), TITLE))
+            continue
+
+        if stripped.startswith("## "):
+            story.append(Paragraph(md_inline(stripped[3:]), H2))
+            continue
+
+        if stripped.startswith("### "):
+            story.append(Paragraph(md_inline(stripped[4:]), H3))
+            continue
+
+        # bullets
+        if stripped.startswith("- "):
+            bullets.append(ListItem(Paragraph(md_inline(stripped[2:]), BODY)))
+            continue
+        else:
+            if bullets:
+                story.append(ListFlowable(bullets, bulletType="bullet", spaceBefore=2, spaceAfter=6))
+                bullets=[]
+
+        # paragraph
+        if stripped.strip():
+            story.append(Paragraph(md_inline(stripped), BODY))
+
+    if bullets:
+        story.append(ListFlowable(bullets, bulletType="bullet", spaceBefore=2, spaceAfter=6))
+
+    doc.build(story)
     buffer.seek(0)
     return buffer
