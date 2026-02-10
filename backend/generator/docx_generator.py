@@ -10,7 +10,6 @@ import re
 # ---------- INLINE FORMAT ----------
 def apply_inline_format(paragraph, text):
 
-    # fix broken markdown
     text = text.replace("** ", "**").replace(" **", "**")
 
     if text.count("**") % 2 != 0:
@@ -52,7 +51,7 @@ def apply_inline_format(paragraph, text):
                 i = end + 1
                 continue
 
-        # link [text](url)
+        # links [text](url)
         if text[i] == "[":
             close = text.find("]", i)
             if close != -1 and text[close+1:close+2] == "(":
@@ -69,12 +68,34 @@ def apply_inline_format(paragraph, text):
         i += 1
 
 
+# ---------- CODE WRAP ----------
+def wrap_code_lines(code, max_chars=90):
+    wrapped = []
+
+    for line in code.split("\n"):
+        indent = len(line) - len(line.lstrip(" "))
+        prefix = " " * indent
+        text = line.lstrip()
+
+        while len(text) > max_chars:
+            part = text[:max_chars]
+            wrapped.append(prefix + part)
+            text = text[max_chars:]
+
+        wrapped.append(prefix + text)
+
+    return "\n".join(wrapped)
+
+
 # ---------- CODE BLOCK ----------
 def add_code_block(doc, code_text):
+
+    code_text = wrap_code_lines(code_text, 90)
 
     table = doc.add_table(rows=1, cols=1)
     cell = table.rows[0].cells[0]
 
+    # gray background
     tcPr = cell._element.xpath('./w:tcPr')[0]
     shd = OxmlElement('w:shd')
     shd.set(qn('w:fill'), "F7F7F8")
@@ -143,7 +164,7 @@ def create_docx(text):
             code_buffer.append(line)
             continue
 
-        # table detection
+        # table
         if "|" in stripped and stripped.count("|")>=2:
             table_buffer.append(stripped)
             continue
