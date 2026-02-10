@@ -32,8 +32,29 @@ def md_inline(text):
     return text
 
 
+# ---------- CODE WRAP FIX ----------
+def wrap_code_lines(code, max_chars=85):
+    wrapped = []
+    for line in code.split("\n"):
+
+        indent = len(line) - len(line.lstrip(" "))
+        prefix = " " * indent
+        text = line.lstrip()
+
+        while len(text) > max_chars:
+            part = text[:max_chars]
+            wrapped.append(prefix + part)
+            text = text[max_chars:]
+
+        wrapped.append(prefix + text)
+
+    return "\n".join(wrapped)
+
+
 # ---------- CODE BLOCK ----------
 def code_block(code):
+
+    code = wrap_code_lines(code, 85)
 
     inner = Preformatted(code, ParagraphStyle(
         "code_inner",
@@ -69,7 +90,6 @@ def create_pdf(text):
 
     styles = getSampleStyleSheet()
 
-    # colored headings
     TITLE = ParagraphStyle(
         "TITLE",
         parent=styles["Heading1"],

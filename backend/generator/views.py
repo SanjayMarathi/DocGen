@@ -141,149 +141,97 @@ def connection_status(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def generate_documentation(request):
-
     user_input = request.data.get("code", "").strip()
+
     if not user_input:
         return StreamingHttpResponse("Please enter a topic.", content_type="text/plain")
-
+    
+    # Create DB Entry
     title = " ".join(user_input.split()[:5])[:30] or "New Doc"
     doc_entry = DocHistory.objects.create(user=request.user, topic=title, content="")
 
-    input_type = detect_input_type(user_input)
-
+    online = internet_available()
     web_context = ""
-    if input_type == "factual" and internet_available():
+
+    if online and (needs_real_data(user_input) or len(user_input) < 150):
         web_context = fetch_wikipedia(user_input)
 
-
-    # ================= PROMPT ENGINE =================
-    # ================= STRICT MARKDOWN PROMPTS =================
-
-    if input_type == "code":
+    # ================= PROMPT =================
+    if web_context:
         prompt = f"""
-    You are a senior software engineer.
+You are a documentation formatter AI.
 
-    Generate COMPLETE technical documentation in STRICT MARKDOWN.
+IMPORTANT RULE:
+You are NOT allowed to change ANY factual values.
+Do NOT calculate. Do NOT estimate. Do NOT rephrase numbers.
+You must copy all numbers EXACTLY.
 
-    FORMAT RULES:
-    - Use Markdown headings (#, ##, ###)
-    - Use bullet points
-    - Use tables where useful
-    - Use fenced code blocks ```language
-    - Never write plain paragraphs only
-    - Never write story/history
-    - Always structured documentation
+VERIFIED DATA:
+{web_context}
 
-    DOCUMENT STRUCTURE:
-
-    # Overview
-    # Code Explanation
-    ## Line-by-line explanation
-    # Execution Flow
-    # Edge Cases
-    # Time Complexity
-    # Space Complexity
-    # Example Execution
-    # Improvements
-
-    CODE:
-    {user_input}
-    """
-
-    elif input_type == "problem":
-        prompt = f"""
-    You are a competitive programming expert.
-
-    Solve and document the problem in STRICT MARKDOWN.
-
-    REQUIRED FORMAT:
-
-    # Problem Understanding
-    # Optimal Approach
-    # Algorithm
-    # Dry Run
-    # Test Cases
-    # Complexity Analysis
-    # Reference Implementation
-
-    Rules:
-    - Include at least 4 test cases
-    - Include step-by-step dry run
-    - Include final clean code block
-
-    PROBLEM:
-    {user_input}
-    """
-
-    elif input_type == "factual":
-        prompt = f"""
-    Convert the VERIFIED DATA into structured markdown documentation.
-
-    Rules:
-    - DO NOT modify numbers
-    - DO NOT hallucinate
-    - Only format
-    - Use headings and bullet points
-
-    DATA:
-    {web_context}
-    """
-
+TASK:
+Convert into structured documentation using headings and bullet points.
+"""
+        warning = "online"
     else:
         prompt = f"""
-    Create deep technical documentation in STRICT MARKDOWN format.
+You are a professional documentation writer.
 
-    STRUCTURE:
+Explain the topic in structured documentation style.
+Use headings, sections, examples and detailed explanation.
 
-    # Definition
-    # How It Works
-    # Internal Mechanism
-    # Real World Use
-    # Advantages
-    # Disadvantages
-    # Example
-    # Summary
+Topic: {user_input}
+"""
+        warning = "offline"
 
-    TOPIC:
-    {user_input}
-    """
+    # ================= MODEL SELECTION =================
+    user_model = request.data.get("model", "qwen2.5-coder:3b")
 
+    ALLOWED_MODELS = [
+        "phi3:mini",
+        "qwen2.5-coder:3b",
+        "qwen2.5-coder:7b"
+    ]
 
+    if user_model not in ALLOWED_MODELS:
+        user_model = "qwen2.5-coder:3b"
 
     payload = {
-        "model": "qwen2.5-coder:7b",
+        "model": user_model,
         "prompt": prompt,
         "stream": True
     }
 
-
+    # ================= STREAM =================
     def stream():
         yield json.dumps({"id": doc_entry.id}) + "\n"
-        full_text = ""
 
+        full_text = ""
         try:
             response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
 
             for line in response.iter_lines():
-                if line:
-                    data = json.loads(line.decode("utf-8"))
-                    if "response" in data:
-                        chunk = data["response"]
-                        full_text += chunk
-                        yield chunk
+                if not line:
+                    continue
 
+                data = json.loads(line.decode("utf-8"))
+
+                if "response" in data:
+                    chunk = data["response"]
+                    full_text += chunk
+                    yield chunk
+            
             if full_text:
                 doc_entry.content = full_text
                 doc_entry.save()
 
-        except Exception:
+        except Exception as e:
             yield "\nModel not responding. Ensure Ollama is running."
 
-
     resp = StreamingHttpResponse(stream(), content_type="text/plain")
+    resp["X-AI-Warning"] = warning
     resp["Cache-Control"] = "no-cache"
     return resp
-
 
 # =========================================================
 # DOWNLOADS
