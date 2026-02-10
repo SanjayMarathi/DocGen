@@ -98,16 +98,16 @@ export default function App() {
 
   const generateDocs = async () => {
     if (!code.trim()) return;
-    setDocs(""); 
+    setDocs("");
     setLoading(true);
-    setCurrentDocId(null); 
-    
+    setCurrentDocId(null);
+
     const controller = new AbortController();
     setAbortController(controller);
 
     try {
       const response = await fetch(`${API_BASE}generate/`, {
-        method: "POST", 
+        method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ code, model }),
         signal: controller.signal
@@ -124,14 +124,14 @@ export default function App() {
         let chunk = decoder.decode(value, {stream: true});
         
         if (isFirstChunk) {
-            const match = chunk.match(/^\{"id":\s*(\d+)\}\n/);
-            if (match) {
-                const newId = parseInt(match[1]);
-                setCurrentDocId(newId);
-                chunk = chunk.replace(match[0], "");
-                fetchHistory(); 
-            }
-            isFirstChunk = false;
+          const match = chunk.match(/^\{"id":\s*(\d+)\}\n/);
+          if (match) {
+            const newId = parseInt(match[1]);
+            setCurrentDocId(newId);
+            chunk = chunk.replace(match[0], "");
+            fetchHistory();
+          }
+          isFirstChunk = false;
         }
         
         setDocs(prev => prev + chunk);
