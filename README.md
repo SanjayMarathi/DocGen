@@ -15,11 +15,13 @@ It works completely **offline** using:
 
 ## ✨ Features
 
-✅ Paste code and generate documentation instantly  
-✅ Upload code files (.py, .cpp, .java, .js)  
-✅ AI-generated structured Markdown documentation  
-✅ Export documentation as a perfectly aligned PDF  
-✅ Modern SaaS-grade UI (Gemini-level design)  
+✅ Paste code and generate documentation instantly
+✅ Upload code files (.py, .cpp, .java, .js)
+✅ AI-generated structured Markdown documentation
+✅ Export documentation as PDF or DOCX format
+✅ Clean, modern UI with split-screen login and blue theme
+✅ Dark mode support with animated background
+✅ Document history tracking and management
 ✅ Fully Offline (No OpenAI / No Gemini API needed)
 
 ---
@@ -56,7 +58,7 @@ ollama serve
 cd backend
 python -m venv venv
 .\venv\Scripts\activate
-pip install django djangorestframework django-cors-headers requests reportlab
+pip install django djangorestframework djangorestframework-simplejwt django-cors-headers requests reportlab python-docx wikipedia
 python manage.py migrate
 python manage.py runserver 8000
 ```
