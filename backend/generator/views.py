@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 import requests
 import json
 import socket
-import wikipedia # Uses the library as you requested
+import wikipedia
 
 from .models import DocHistory
 from .pdf_generator import create_pdf
@@ -15,8 +15,9 @@ from .docx_generator import create_docx
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
+
 # =========================================================
-# HELPER: INTERNET CHECK
+# INTERNET CHECK
 # =========================================================
 def internet_available():
     try:
@@ -25,8 +26,9 @@ def internet_available():
     except:
         return False
 
+
 # =========================================================
-# HELPER: DECIDE IF REAL DATA REQUIRED
+# REAL DATA DETECTOR
 # =========================================================
 def needs_real_data(text):
     keywords = [
@@ -38,54 +40,80 @@ def needs_real_data(text):
     text = text.lower()
     return any(k in text for k in keywords)
 
+
 # =========================================================
-# HELPER: RELIABLE WIKIPEDIA FETCH (User's Logic)
+# INPUT TYPE DETECTOR  ⭐ IMPORTANT
+# =========================================================
+def detect_input_type(text: str):
+    text_lower = text.lower().strip()
+
+    code_symbols = [
+        "{", "}", ";", "()", "[]", "=>", "::", "#include",
+        "def ", "class ", "public ", "private ", "</", "/>",
+        "printf", "cout", "cin"
+    ]
+
+    algorithm_words = [
+        "problem", "leetcode", "codeforces", "find", "return",
+        "array", "integer", "sum", "subarray", "graph", "tree"
+    ]
+
+    if any(sym in text for sym in code_symbols) or "\n" in text:
+        return "code"
+
+    if any(w in text_lower for w in algorithm_words):
+        return "problem"
+
+    if needs_real_data(text):
+        return "factual"
+
+    return "concept"
+
+
+# =========================================================
+# WIKIPEDIA FETCH
 # =========================================================
 def fetch_wikipedia(query):
     try:
         wikipedia.set_lang("en")
-
-        # Step 1: search closest matching article
         results = wikipedia.search(query)
-        if not results: return ""
+        if not results:
+            return ""
 
-        # Step 2: best match
-        title = results[0]
-
-        # Step 3: fetch page
-        page = wikipedia.page(title, auto_suggest=False)
-
-        # Step 4: trim content for LLM
-        content = page.content[:6000]
-
-        return f"Verified Topic: {page.title}\n\n{content}"
+        page = wikipedia.page(results[0], auto_suggest=False)
+        return page.content[:6000]
 
     except wikipedia.exceptions.DisambiguationError as e:
         try:
             page = wikipedia.page(e.options[0])
-            return f"Verified Topic: {page.title}\n\n{page.content[:6000]}"
-        except: return ""
-    except Exception as e:
-        print(f"Wiki Error: {e}")
+            return page.content[:6000]
+        except:
+            return ""
+    except:
         return ""
 
+
 # =========================================================
-# AUTHENTICATION & USER MANAGEMENT (Restored)
+# AUTH
 # =========================================================
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register_user(request):
     username = request.data.get("username")
     password = request.data.get("password")
-    if not username or not password: return Response({"error": "Missing fields"}, 400)
-    if User.objects.filter(username=username).exists(): return Response({"error": "User exists"}, 400)
+    if not username or not password:
+        return Response({"error": "Missing fields"}, 400)
+    if User.objects.filter(username=username).exists():
+        return Response({"error": "User exists"}, 400)
     User.objects.create_user(username=username, password=password)
     return Response({"message": "User created"})
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
     return Response({"username": request.user.username})
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -93,87 +121,149 @@ def get_history(request):
     data = DocHistory.objects.filter(user=request.user).order_by('-created_at').values()
     return Response(list(data))
 
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_history(request, pk):
     get_object_or_404(DocHistory, pk=pk, user=request.user).delete()
     return Response({"message": "Deleted"})
 
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def connection_status(request):
     return Response({"online": internet_available()})
 
+
 # =========================================================
-# MAIN GENERATION LOGIC
+# MAIN GENERATION
 # =========================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def generate_documentation(request):
-    user_input = request.data.get("code", "").strip()
 
+    user_input = request.data.get("code", "").strip()
     if not user_input:
         return StreamingHttpResponse("Please enter a topic.", content_type="text/plain")
-    
-    # 1. Create DB Entry (Required for Frontend)
+
     title = " ".join(user_input.split()[:5])[:30] or "New Doc"
     doc_entry = DocHistory.objects.create(user=request.user, topic=title, content="")
 
-    online = internet_available()
-    web_context = ""
+    input_type = detect_input_type(user_input)
 
-    # 2. Smart Context Fetching
-    # Logic: If strict keywords present OR input is short (Topic lookup), fetch Wiki
-    if online and (needs_real_data(user_input) or len(user_input) < 150):
+    web_context = ""
+    if input_type == "factual" and internet_available():
         web_context = fetch_wikipedia(user_input)
 
-    # 3. Prompt Engineering (User's Exact Prompts)
-    if web_context:
+
+    # ================= PROMPT ENGINE =================
+    # ================= STRICT MARKDOWN PROMPTS =================
+
+    if input_type == "code":
         prompt = f"""
-        You are a documentation formatter AI.
+    You are a senior software engineer.
 
-        IMPORTANT RULE:
-        You are NOT allowed to change ANY factual values.
-        Do NOT calculate. Do NOT estimate. Do NOT rephrase numbers.
-        Your job is ONLY to organize the given verified data into clean documentation.
-        You must copy all numbers EXACTLY as provided.
+    Generate COMPLETE technical documentation in STRICT MARKDOWN.
 
-        -------------------------------------
-        VERIFIED DATA (IMMUTABLE SOURCE)
-        -------------------------------------
-        {web_context}
-        -------------------------------------
+    FORMAT RULES:
+    - Use Markdown headings (#, ##, ###)
+    - Use bullet points
+    - Use tables where useful
+    - Use fenced code blocks ```language
+    - Never write plain paragraphs only
+    - Never write story/history
+    - Always structured documentation
 
-        TASK:
-        Convert the above information into structured documentation using:
-        - Clear headings
-        - Bullet points
-        - Sections
-        
-        You are formatting — NOT rewriting.
-        """
-        warning = "online"
+    DOCUMENT STRUCTURE:
+
+    # Overview
+    # Code Explanation
+    ## Line-by-line explanation
+    # Execution Flow
+    # Edge Cases
+    # Time Complexity
+    # Space Complexity
+    # Example Execution
+    # Improvements
+
+    CODE:
+    {user_input}
+    """
+
+    elif input_type == "problem":
+        prompt = f"""
+    You are a competitive programming expert.
+
+    Solve and document the problem in STRICT MARKDOWN.
+
+    REQUIRED FORMAT:
+
+    # Problem Understanding
+    # Optimal Approach
+    # Algorithm
+    # Dry Run
+    # Test Cases
+    # Complexity Analysis
+    # Reference Implementation
+
+    Rules:
+    - Include at least 4 test cases
+    - Include step-by-step dry run
+    - Include final clean code block
+
+    PROBLEM:
+    {user_input}
+    """
+
+    elif input_type == "factual":
+        prompt = f"""
+    Convert the VERIFIED DATA into structured markdown documentation.
+
+    Rules:
+    - DO NOT modify numbers
+    - DO NOT hallucinate
+    - Only format
+    - Use headings and bullet points
+
+    DATA:
+    {web_context}
+    """
+
     else:
         prompt = f"""
-        You are a professional documentation writer.
-        Explain the topic in a structured documentation style.
-        Rules:
-        - Use headings and sections
-        - Use bullet points where useful
-        - Do not hallucinate statistics
-        Topic: {user_input}
-        """
-        warning = "offline"
+    Create deep technical documentation in STRICT MARKDOWN format.
 
-    payload = {"model": "qwen2.5-coder:7b", "prompt": prompt, "stream": True}
+    STRUCTURE:
+
+    # Definition
+    # How It Works
+    # Internal Mechanism
+    # Real World Use
+    # Advantages
+    # Disadvantages
+    # Example
+    # Summary
+
+    TOPIC:
+    {user_input}
+    """
+
+
+
+    payload = {
+        "model": "qwen2.5-coder:7b",
+        "prompt": prompt,
+        "stream": True
+    }
+
 
     def stream():
-        # 4. Critical: Yield ID first
         yield json.dumps({"id": doc_entry.id}) + "\n"
-
         full_text = ""
+
         try:
             response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
+
             for line in response.iter_lines():
                 if line:
                     data = json.loads(line.decode("utf-8"))
@@ -181,19 +271,19 @@ def generate_documentation(request):
                         chunk = data["response"]
                         full_text += chunk
                         yield chunk
-            
-            # 5. Save final content
+
             if full_text:
                 doc_entry.content = full_text
                 doc_entry.save()
 
-        except Exception as e:
+        except Exception:
             yield "\nModel not responding. Ensure Ollama is running."
 
+
     resp = StreamingHttpResponse(stream(), content_type="text/plain")
-    resp["X-AI-Warning"] = warning
     resp["Cache-Control"] = "no-cache"
     return resp
+
 
 # =========================================================
 # DOWNLOADS
@@ -204,25 +294,13 @@ def download_pdf(request):
     if not docs.strip():
         return Response({"error": "No documentation provided."})
 
-    try:
-        pdf_buffer = create_pdf(docs)  # already BytesIO
-        pdf_buffer.seek(0)
+    pdf_buffer = create_pdf(docs)
+    pdf_buffer.seek(0)
 
-        return FileResponse(
-            pdf_buffer,
-            as_attachment=True,
-            filename="Doc.pdf",
-            content_type="application/pdf"
-        )
-
-    except Exception as e:
-        print("PDF ERROR:", str(e))
-        return Response({"error": str(e)}, status=500)
+    return FileResponse(pdf_buffer, as_attachment=True, filename="Doc.pdf", content_type="application/pdf")
 
 
 @api_view(["POST"])
 def download_docx(request):
     docs = request.data.get("docs", "")
-    try: 
-        return FileResponse(create_docx(docs), as_attachment=True, filename="Doc.docx")
-    except Exception as e: return Response({"error": str(e)}, status=500)
+    return FileResponse(create_docx(docs), as_attachment=True, filename="Doc.docx")
