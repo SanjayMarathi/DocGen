@@ -41,7 +41,10 @@ export default function App() {
   const [docs, setDocs] = useState("");
   const [history, setHistory] = useState([]);
   const [currentDocId, setCurrentDocId] = useState(null);
-  const [model, setModel] = useState("phi3:mini");
+  
+  // --- UPDATED DEFAULT TO BALANCED ---
+  const [model, setModel] = useState("qwen2.5-coder:3b");
+  
   const [loading, setLoading] = useState(false);
   const [connection, setConnection] = useState("checking");
   const [abortController, setAbortController] = useState(null);
@@ -96,6 +99,7 @@ export default function App() {
     setView("home");
   };
 
+  // --- GENERATION LOGIC WITH SCROLL FIX ---
   const generateDocs = async () => {
     if (!code.trim()) return;
     setDocs(""); 
@@ -134,8 +138,25 @@ export default function App() {
             isFirstChunk = false;
         }
         
+        // --- SCROLL FIX START ---
+        const container = outputRef.current;
+        let shouldAutoScroll = false;
+        
+        if (container) {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            if (scrollHeight - scrollTop - clientHeight < 150) {
+                shouldAutoScroll = true;
+            }
+        }
+
         setDocs(prev => prev + chunk);
-        if(outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
+
+        if (shouldAutoScroll && container) {
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 0);
+        }
+        // --- SCROLL FIX END ---
       }
     } catch (e) { 
         if (e.name !== 'AbortError') console.error(e);
@@ -200,6 +221,9 @@ export default function App() {
   const textMain = isDark ? "text-gray-100" : "text-black";
   const textSub = isDark ? "text-gray-400" : "text-gray-600";
   const border = isDark ? "border-[#3f3f46]" : "border-gray-300";
+  
+  // Adjusted Blue (Lower grade/Less neon)
+  const primaryBtn = "bg-slate-700 hover:bg-slate-600 text-white shadow-none";
 
   // --- RENDER ---
   if (!token) return <AuthPage onAuth={handleAuth} theme={theme} setTheme={setTheme} />;
@@ -230,7 +254,7 @@ export default function App() {
             <div className="p-4">
                 <button 
                     onClick={() => { setDocs(""); setCurrentDocId(null); setView("home"); }}
-                    className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                    className={`w-full py-3 ${primaryBtn} font-bold rounded-lg flex items-center justify-center gap-2`}
                 >
                     <PlusCircle size={18}/> New Document
                 </button>
@@ -285,11 +309,11 @@ export default function App() {
              </div>
              
              <div className="flex gap-4 items-center">
-                 <button onClick={() => setView("home")} className={`text-sm font-bold ${view === 'home' ? 'text-blue-500' : textSub}`}>Workspace</button>
-                 <button onClick={() => setView("about")} className={`text-sm font-bold ${view === 'about' ? 'text-blue-500' : textSub}`}>About</button>
-                 <button onClick={() => setView("contact")} className={`text-sm font-bold ${view === 'contact' ? 'text-blue-500' : textSub}`}>Contact</button>
+                 <button onClick={() => setView("home")} className={`text-sm font-bold ${view === 'home' ? 'text-blue-600' : textSub}`}>Workspace</button>
+                 <button onClick={() => setView("about")} className={`text-sm font-bold ${view === 'about' ? 'text-blue-600' : textSub}`}>About</button>
+                 <button onClick={() => setView("contact")} className={`text-sm font-bold ${view === 'contact' ? 'text-blue-600' : textSub}`}>Contact</button>
                  <div className="w-px h-4 bg-gray-400"></div>
-                 <button onClick={() => setTheme(isDark ? 'light' : 'dark')} className="hover:text-blue-500">
+                 <button onClick={() => setTheme(isDark ? 'light' : 'dark')} className="hover:text-blue-600">
                      {isDark ? <Sun size={20}/> : <Moon size={20}/>}
                  </button>
              </div>
@@ -303,7 +327,6 @@ export default function App() {
                     {/* Documentation Output */}
                     <div ref={outputRef} className="flex-1 overflow-y-auto p-8 pb-10 scroll-smooth">
                         {!docs && !loading ? (
-                            // --- UPDATED EMPTY STATE HERE ---
                             <div className="h-full flex flex-col items-center justify-center opacity-40 text-center">
                                 <Layout size={64} className="mb-6"/>
                                 <h2 className="text-3xl font-bold mb-3">Generate Professional Documentation</h2>
@@ -403,7 +426,7 @@ export default function App() {
                                                 <StopCircle size={24}/>
                                             </button>
                                         ) : (
-                                            <button onClick={generateDocs} disabled={!code.trim()} className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                                            <button onClick={generateDocs} disabled={!code.trim()} className={`p-3 ${primaryBtn} rounded-lg disabled:opacity-50`}>
                                                 <Wand2 size={24}/>
                                             </button>
                                         )}
@@ -445,7 +468,7 @@ export default function App() {
   );
 }
 
-// --- LOGIN / REGISTER PAGE ---
+// --- REDESIGNED AUTH PAGE (Professional / No "Vibe Code") ---
 const AuthPage = ({ onAuth, theme, setTheme }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [user, setUser] = useState("");
@@ -457,38 +480,66 @@ const AuthPage = ({ onAuth, theme, setTheme }) => {
     };
 
     const isDark = theme === 'dark';
-    const bg = isDark ? "bg-[#18181b]" : "bg-[#e5e7eb]";
-    const card = isDark ? "bg-[#27272a]" : "bg-white";
-    const text = isDark ? "text-white" : "text-black";
+    const bg = isDark ? "bg-[#18181b]" : "bg-[#f9fafb]"; // Dark Zinc vs Very Light Gray
+    const card = isDark ? "bg-[#27272a] border-[#3f3f46]" : "bg-white border-gray-200";
+    const text = isDark ? "text-white" : "text-gray-900";
+    const inputBg = isDark ? "bg-[#18181b] border-[#3f3f46]" : "bg-white border-gray-300";
 
     return (
-        <div className={`min-h-screen flex items-center justify-center ${bg} ${text}`}>
-            <div className={`w-full max-w-4xl flex shadow-2xl rounded-2xl overflow-hidden ${card}`}>
-                <div className="w-1/2 bg-blue-600 p-12 text-white flex flex-col justify-center relative hidden md:flex">
-                     <h1 className="text-5xl font-bold mb-6">DocGen</h1>
-                     <p className="text-xl opacity-90">Professional Documentation Generation Suite.</p>
-                </div>
+        <div className={`min-h-screen flex items-center justify-center p-4 ${bg} ${text}`}>
+            {/* CLEAN CENTERED CARD */}
+            <div className={`w-full max-w-md p-8 rounded-xl shadow-sm border ${card}`}>
                 
-                <div className="w-full md:w-1/2 p-12 flex flex-col justify-center relative">
-                    <button onClick={() => setTheme(isDark ? 'light' : 'dark')} className="absolute top-6 right-6 p-2 rounded hover:bg-gray-200 dark:hover:bg-white/10">
-                        {isDark ? <Sun/> : <Moon/>}
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center p-3 rounded-xl bg-blue-100 text-blue-600 mb-4">
+                        <Code2 size={28}/>
+                    </div>
+                    <h1 className="text-2xl font-bold tracking-tight">DocGen</h1>
+                    <p className="text-sm opacity-60 mt-2">
+                        {isLogin ? "Sign in to access your workspace" : "Create an account to get started"}
+                    </p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold uppercase opacity-70 ml-1">Username</label>
+                        <input 
+                            value={user} 
+                            onChange={e=>setUser(e.target.value)} 
+                            className={`w-full p-3 rounded-lg outline-none border focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${inputBg}`} 
+                            required
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold uppercase opacity-70 ml-1">Password</label>
+                        <input 
+                            type="password" 
+                            value={pass} 
+                            onChange={e=>setPass(e.target.value)} 
+                            className={`w-full p-3 rounded-lg outline-none border focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${inputBg}`} 
+                            required
+                        />
+                    </div>
+
+                    <button className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors mt-6">
+                        {isLogin ? "Sign In" : "Create Account"}
                     </button>
-                    <h2 className="text-3xl font-bold mb-8">{isLogin ? "Login" : "Register"}</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold uppercase opacity-60">Username</label>
-                            <input value={user} onChange={e=>setUser(e.target.value)} className={`w-full p-3 rounded border outline-none focus:border-blue-500 ${isDark ? 'bg-[#18181b] border-gray-600' : 'bg-gray-50 border-gray-300'}`} required/>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold uppercase opacity-60">Password</label>
-                            <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className={`w-full p-3 rounded border outline-none focus:border-blue-500 ${isDark ? 'bg-[#18181b] border-gray-600' : 'bg-gray-50 border-gray-300'}`} required/>
-                        </div>
-                        <button className="w-full py-4 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 mt-4">
-                            {isLogin ? "Sign In" : "Create Account"}
-                        </button>
-                    </form>
-                    <button onClick={() => setIsLogin(!isLogin)} className="mt-4 text-sm text-blue-500 hover:underline">
-                        {isLogin ? "Need an account? Register" : "Have an account? Login"}
+                </form>
+
+                {/* Footer Actions */}
+                <div className="mt-6 flex flex-col items-center gap-4">
+                    <button onClick={() => setIsLogin(!isLogin)} className="text-sm text-blue-600 hover:underline font-medium">
+                        {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                    </button>
+                    
+                    <button 
+                        onClick={() => setTheme(isDark ? 'light' : 'dark')} 
+                        className="flex items-center gap-2 text-xs font-bold opacity-40 hover:opacity-100 transition-opacity uppercase"
+                    >
+                        {isDark ? <Sun size={14}/> : <Moon size={14}/>} 
+                        {isDark ? "" : ""}
                     </button>
                 </div>
             </div>
