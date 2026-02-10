@@ -5,3 +5,6 @@ requests
 reportlab
 gunicorn
 whitenoise
+djangorestframework-simplejwt
+wikipedia
+python-docx

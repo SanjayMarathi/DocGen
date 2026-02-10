@@ -13,11 +13,19 @@ import {
 const API_BASE = "http://127.0.0.1:8000/api/";
 const API = axios.create({ baseURL: API_BASE });
 
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default function App() {
   // --- STATE ---
@@ -59,37 +67,48 @@ export default function App() {
 
   // --- AUTH ---
   const handleAuth = async (e) => {
-    e.preventDefault();
-    // FIX: specific detection of the button clicked
-    const submitter = e.nativeEvent.submitter;
-    const isRegister = submitter.innerText === "Register";
-    
-    const user = e.target[0].value;
-    const pass = e.target[1].value;
+  e.preventDefault();
 
-    try {
-        const endpoint = isRegister ? "register/" : "login/";
-        const res = await axios.post(`${API_BASE}${endpoint}`, { username: user, password: pass });
-        
-        if (isRegister) {
-            alert("Registered successfully! Please login.");
-        } else {
-            // FIX: Ensure we actually catch the token before setting state
-            if (res.data.access) {
-                localStorage.setItem("token", res.data.access);
-                setToken(res.data.access);
-                // Reset connection check immediately after login
-                checkConnection();
-                setTimeout(() => { fetchUser(); fetchHistory(); }, 50);
-            } else {
-                alert("Login failed: No token received");
-            }
-        }
-    } catch (err) { 
-        console.error(err);
-        alert(err.response?.data?.error || "Auth Failed"); 
+  const submitter = e.nativeEvent.submitter;
+  const isRegister = submitter.innerText === "Register";
+
+  const user = e.target[0].value;
+  const pass = e.target[1].value;
+
+  try {
+    const endpoint = isRegister ? "register/" : "login/";
+    const res = await axios.post(`${API_BASE}${endpoint}`, {
+      username: user,
+      password: pass,
+    });
+
+    if (isRegister) {
+      alert("Registered successfully! Please login.");
+      return;
     }
-  };
+
+    //  CORRECT token extraction
+    const token = res.data.access ?? res.data.refresh;
+
+    if (!token) {
+      throw new Error("No token returned from backend");
+    }
+
+    //  Persist token
+    localStorage.setItem("token", token);
+    setToken(token);
+
+    //  Trigger post-login fetches ONCE
+    await checkConnection();
+    await fetchUser();
+    await fetchHistory();
+
+  } catch (err) {
+    console.error("AUTH ERROR:", err);
+    alert(err.response?.data?.error || err.message || "Auth Failed");
+  }
+};
+
 
   // --- CORE LOGIC ---
   const generateDocs = async () => {

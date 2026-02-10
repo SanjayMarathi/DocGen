@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.http import StreamingHttpResponse, FileResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+import os
 import requests
 import json
 import socket
@@ -13,7 +14,8 @@ from .models import DocHistory
 from .pdf_generator import create_pdf
 from .docx_generator import create_docx
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434/api/generate')
+OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'qwen2.5-coder:3b')
 
 # =========================================================
 # HELPER: INTERNET CHECK
@@ -165,7 +167,7 @@ def generate_documentation(request):
         """
         warning = "offline"
 
-    payload = {"model": "qwen2.5-coder:7b", "prompt": prompt, "stream": True}
+    payload = {"model": OLLAMA_MODEL, "prompt": prompt, "stream": True}
 
     def stream():
         # 4. Critical: Yield ID first
