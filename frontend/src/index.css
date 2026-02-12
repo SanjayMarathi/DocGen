@@ -88,3 +88,41 @@ body {
     linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
 }
+
+.wavy-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.wavy-bg svg {
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  top: -25%;
+  left: -25%;
+
+  animation: waveDrift 6s ease-in-out infinite alternate;
+
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.dark .wavy-bg svg {
+  opacity: 0.38;
+}
+
+.light .wavy-bg svg {
+  opacity: 0.38;
+}
+
+@keyframes waveDrift {
+  0% {
+    transform: translate3d(-2%, -2%, 0);
+  }
+  100% {
+    transform: translate3d(2%, 2%, 0);
+  }
+}

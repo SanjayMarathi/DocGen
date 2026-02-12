@@ -16,23 +16,15 @@ import {
 const API_BASE = "http://127.0.0.1:8000/api/";
 const API = axios.create({ baseURL: API_BASE });
 
-API.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 // --- MODELS ---
 const MODELS = [
-    { id: "phi3:mini", label: "Fast" },
+    { id: "phi3:latest", label: "Fast" },
     { id: "qwen2.5-coder:3b", label: "Balanced" },
     { id: "qwen2.5-coder:7b", label: "Thinking" }
 ];
@@ -78,36 +70,6 @@ export default function App() {
     return () => clearInterval(interval);
   }, [token]);
 
-<<<<<<< HEAD
-  // --- RESIZE INPUT ---
-  useEffect(() => {
-    if (textareaRef.current) {
-        textareaRef.current.style.height = isInputMinimized ? "40px" : "auto";
-        if(!isInputMinimized) textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + "px";
-    }
-  }, [code, isInputMinimized]);
-
-  // --- AUTH ---
-  const handleAuth = async (e) => {
-  e.preventDefault();
-
-  const submitter = e.nativeEvent.submitter;
-  const isRegister = submitter.innerText === "Register";
-
-  const user = e.target[0].value;
-  const pass = e.target[1].value;
-
-  try {
-    const endpoint = isRegister ? "register/" : "login/";
-    const res = await axios.post(`${API_BASE}${endpoint}`, {
-      username: user,
-      password: pass,
-    });
-
-    if (isRegister) {
-      alert("Registered successfully! Please login.");
-      return;
-=======
   // --- ACTIONS ---
   const handleAuth = async (type, data) => {
     try {
@@ -127,31 +89,8 @@ export default function App() {
     } catch (err) {
       alert(err.response?.data?.error || "Connection Error");
       return false;
->>>>>>> 74b3854bfdc5d08565a4f73d857b9611ac5968fc
     }
-
-    //  CORRECT token extraction
-    const token = res.data.access ?? res.data.refresh;
-
-    if (!token) {
-      throw new Error("No token returned from backend");
-    }
-
-    //  Persist token
-    localStorage.setItem("token", token);
-    setToken(token);
-
-    //  Trigger post-login fetches ONCE
-    await checkConnection();
-    await fetchUser();
-    await fetchHistory();
-
-  } catch (err) {
-    console.error("AUTH ERROR:", err);
-    alert(err.response?.data?.error || err.message || "Auth Failed");
-  }
-};
-
+  };
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -290,8 +229,25 @@ export default function App() {
   if (!token) return <AuthPage onAuth={handleAuth} theme={theme} setTheme={setTheme} />;
 
   return (
-    <div className={`flex h-screen w-full overflow-hidden font-sans ${bgMain} ${textMain}`}>
-      
+    
+    <div className={`relative flex h-screen w-full overflow-hidden font-sans ${bgMain} ${textMain}`}>
+        <div className="wavy-bg">
+            <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+                <g
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="0.6"
+                className="text-gray-400 dark:text-gray-600"
+                >
+                <path d="M0 200 Q300 120 600 200 T1200 200" />
+                <path d="M0 300 Q300 220 600 300 T1200 300" />
+                <path d="M0 400 Q300 320 600 400 T1200 400" />
+                <path d="M0 500 Q300 420 600 500 T1200 500" />
+                <path d="M0 600 Q300 520 600 600 T1200 600" />
+                </g>
+            </svg>
+        </div>
+
       {/* SIDEBAR */}
       <AnimatePresence>
         {showHistory && (
@@ -501,16 +457,65 @@ export default function App() {
 
             {/* Static Pages */}
             {view === 'about' && (
-                <div className="p-10 max-w-3xl mx-auto overflow-y-auto">
-                    <h1 className="text-4xl font-bold mb-6">About DocGen</h1>
-                    <p className="text-lg leading-8 opacity-80">DocGen is a professional tool designed to automate software documentation using advanced AI models.</p>
+            <div className="p-12 max-w-4xl mx-auto overflow-y-auto">
+                <h1 className="text-4xl font-semibold mb-8 text-gray-900 dark:text-white">
+                About DocGen
+                </h1>
+
+                <p className="text-lg leading-relaxed mb-12 text-gray-600 dark:text-gray-300">
+                DocGen is an AI-powered documentation workspace built for developers.
+                Transform raw source code into structured, production-ready documentation
+                in seconds.
+                </p>
+
+                <div className="grid gap-6">
+
+                <div className="p-6 rounded-xl border 
+                    bg-gray-100 border-gray-200 
+                    dark:bg-white/5 dark:border-white/10">
+                    <h2 className="text-xl font-medium mb-2 text-gray-900 dark:text-white">
+                    1. Provide Your Code
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Paste your source code directly into the editor or upload your file.
+                    DocGen analyzes your structure instantly.
+                    </p>
                 </div>
+
+                <div className="p-6 rounded-xl border 
+                    bg-gray-100 border-gray-200 
+                    dark:bg-white/5 dark:border-white/10">
+                    <h2 className="text-xl font-medium mb-2 text-gray-900 dark:text-white">
+                    2. Choose Your Model
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Select between <span className="font-medium">Fast</span>, 
+                    <span className="font-medium"> Balanced</span>, or 
+                    <span className="font-medium"> Thinking</span> depending on the 
+                    depth and speed you need.
+                    </p>
+                </div>
+
+                <div className="p-6 rounded-xl border 
+                    bg-gray-100 border-gray-200 
+                    dark:bg-white/5 dark:border-white/10">
+                    <h2 className="text-xl font-medium mb-2 text-gray-900 dark:text-white">
+                    3. Generate & Export
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Instantly receive clean, structured documentation ready to copy,
+                    download, or integrate into your workflow.
+                    </p>
+                </div>
+
+                </div>
+            </div>
             )}
             
             {view === 'contact' && (
                 <div className="p-10 max-w-3xl mx-auto overflow-y-auto">
                     <h1 className="text-4xl font-bold mb-6">Contact Us</h1>
-                    <div className="flex items-center gap-4 text-lg"><Mail/> support@docgen.com</div>
+                    <div className="flex items-center gap-4 text-lg"><Mail/> docgenindia@gmail.com</div>
                 </div>
             )}
 
