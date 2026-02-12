@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from django.http import StreamingHttpResponse, FileResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-import os
 import requests
 import json
 import socket
@@ -14,8 +13,7 @@ from .models import DocHistory
 from .pdf_generator import create_pdf
 from .docx_generator import create_docx
 
-OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434/api/generate')
-OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'qwen2.5-coder:3b')
+OLLAMA_URL = "http://localhost:11434/api/generate"
 
 
 # =========================================================
@@ -186,15 +184,11 @@ Topic: {user_input}
 """
         warning = "offline"
 
-<<<<<<< HEAD
-    payload = {"model": OLLAMA_MODEL, "prompt": prompt, "stream": True}
-=======
     # ================= MODEL SELECTION =================
     user_model = request.data.get("model", "qwen2.5-coder:3b")
->>>>>>> 74b3854bfdc5d08565a4f73d857b9611ac5968fc
 
     ALLOWED_MODELS = [
-        "phi3:mini",
+        "phi3:latest",
         "qwen2.5-coder:3b",
         "qwen2.5-coder:7b"
     ]
