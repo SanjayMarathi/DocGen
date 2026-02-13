@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  ollama:
+    image: ollama/ollama:latest    # replace with trusted image if needed
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  docgen:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rakshaknaik/docgen:latest
+    environment:
+      - OLLAMA_URL=http://ollama:11434/api/generate
+      - OLLAMA_MODEL=qwen2.5-coder:3b
+      - DJANGO_SETTINGS_MODULE=backend.settings
+    depends_on:
+      - ollama
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    volumes:
+      - ./backend/db.sqlite3:/app/backend/db.sqlite3
+
+volumes:
+  ollama_data:

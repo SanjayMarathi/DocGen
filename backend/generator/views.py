@@ -188,7 +188,7 @@ Topic: {user_input}
     user_model = request.data.get("model", "qwen2.5-coder:3b")
 
     ALLOWED_MODELS = [
-        "phi3:mini",
+        "phi3:latest",
         "qwen2.5-coder:3b",
         "qwen2.5-coder:7b"
     ]
