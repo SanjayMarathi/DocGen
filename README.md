@@ -125,7 +125,7 @@ DocGen/
 └── README.md
 ```
 
-
+```text
 ## ⚙️ Installation & Setup Guide
 # 🔹 Prerequisites
 
@@ -134,11 +134,13 @@ Python 3.10+
 Node.js + npm
 
 Ollama installed locally
-
+```
+```text
 ## 1️⃣ Clone Repository
 git clone https://github.com/SanjayMarathi/DocGen.git
 cd DocGen
-
+```
+```text
 ## 2️⃣ Setup Ollama (Local LLM)
 
 Pull the model and start Ollama:
@@ -150,11 +152,13 @@ ollama serve
 Ollama runs at:
 
 http://localhost:11434
-
+```
+```text
 ## 3️⃣ Backend Setup (Django)
 cd backend
 python -m venv venv
-
+```
+```text
 ## ▶ Activate Virtual Environment
 
 Windows (PowerShell)
@@ -165,7 +169,8 @@ Windows (PowerShell)
 Mac/Linux (Bash)
 
 source venv/bin/activate
-
+```
+```text
 ## ▶ Install Dependencies
 pip install -r requirements.txt
 
@@ -173,10 +178,12 @@ pip install -r requirements.txt
 If requirements.txt is not available:
 
 pip install django djangorestframework djangorestframework-simplejwt django-cors-headers requests reportlab python-docx wikipedia
-
+```
+```text
 ## ▶ Apply Migrations
 python manage.py migrate
-
+```
+```text
 ## ▶ Run Backend Server
 python manage.py runserver 8000
 
@@ -184,7 +191,7 @@ python manage.py runserver 8000
 ## Backend URL:
 
 http://127.0.0.1:8000
-
+```
 ## 4️⃣ Frontend Setup (React)
 cd frontend
 npm install
