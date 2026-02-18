@@ -36,29 +36,39 @@ DocGen runs completely offline using a local LLM.
 
 ✅ Fully Offline (No OpenAI / Gemini required)
 
-## 🏗️ System Architecture
-User
-  ↓
-React Frontend (UI + API Calls)
-  ↓
-Django REST API
-  ↓
-Ollama (Qwen2.5-Coder:7B Local Model)
-  ↓
-Generated Markdown Documentation
-  ↓
-PDF / DOCX Export
-  ↓
-Download to User
+## 🏗 System Architecture
 
-## 🛠️ Tech Stack
-Layer	Technology
-Frontend	React, Tailwind CSS, Framer Motion
-Backend	Django, Django REST Framework
-Authentication	SimpleJWT
-AI Model	Ollama + Qwen2.5-Coder:7B
-PDF Engine	ReportLab (Platypus)
-DOCX Export	python-docx
+User  
+↓  
+React Frontend (UI + API Calls)  
+↓  
+Django REST API  
+↓  
+Ollama Local Model (Qwen2.5-Coder:7B)  
+↓  
+Documentation Generator Engine  
+↓  
+Generated Output  
+├── Markdown Docs  
+├── PDF Export  
+└── DOCX Export  
+↓  
+Download to User
+---
+
+## 🏗️ Tech Stack
+
+| Layer          | Technology                         |
+| -------------- | ---------------------------------- |
+| Frontend       | React, Tailwind CSS, Framer Motion |
+| Backend        | Django, Django REST Framework      |
+| Authentication | SimpleJWT (JWT-based Auth)         |
+| AI Model       | Ollama + Qwen2.5-Coder:7B          |
+| PDF Engine     | ReportLab (Platypus)               |
+| DOCX Export    | python-docx                        |
+
+---
+
 ## 📂 Project Structure
 DocGen/
 │
@@ -93,6 +103,7 @@ DocGen/
 │
 ├── .gitignore
 └── README.md
+---
 
 ## ⚙️ Installation & Setup Guide
 # 🔹 Prerequisites
