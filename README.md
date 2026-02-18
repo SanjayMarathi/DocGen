@@ -56,6 +56,8 @@ Generated Output
 Download to User
 ---
 
+---
+
 ## 🏗️ Tech Stack
 
 | Layer          | Technology                         |
@@ -70,40 +72,59 @@ Download to User
 ---
 
 ## 📂 Project Structure
+bash
+----
 DocGen/
 │
 ├── backend/
-│   ├── backend/               # Django main project
+│   ├── backend/                 # Django main project
+│   │   ├── __init__.py
 │   │   ├── settings.py
 │   │   ├── urls.py
 │   │   ├── asgi.py
 │   │   └── wsgi.py
 │   │
-│   ├── generator/             # AI Documentation App
+│   ├── generator/               # AI Documentation App
 │   │   ├── migrations/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
 │   │   ├── models.py
 │   │   ├── serializers.py
 │   │   ├── views.py
 │   │   ├── urls.py
-│   │   └── utils.py           # Ollama + PDF Logic
+│   │   └── utils.py             # Ollama + PDF Logic
 │   │
 │   ├── manage.py
 │   └── requirements.txt
 │
 ├── frontend/
 │   ├── public/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   └── manifest.json
+│   │
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── Login.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Editor.jsx
+│   │   │   └── History.jsx
+│   │   │
 │   │   ├── services/
+│   │   │   └── api.js
+│   │   │
 │   │   ├── App.js
-│   │   └── index.js
+│   │   ├── index.js
+│   │   └── App.css
 │   │
 │   ├── package.json
-│   └── tailwind.config.js
+│   ├── tailwind.config.js
+│   └── postcss.config.js
 │
 ├── .gitignore
 └── README.md
----
+----
 
 ## ⚙️ Installation & Setup Guide
 # 🔹 Prerequisites
