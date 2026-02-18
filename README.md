@@ -20,3 +20,12 @@ The project aims to reduce manual documentation effort and keep documentation co
 - AI-enhanced code explanations.
 
 - Version-aware documentation tied to releases.
+
+### It works completely *offline* using:
+
+- *Ollama*
+- *Qwen2.5-Coder Model*
+- *Django REST Backend*
+- *React + Tailwind Frontend*
+- *PDF Export Support*
+- *Doc Export Support*
