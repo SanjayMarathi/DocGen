@@ -43,20 +43,13 @@ It works completely **offline** using:
 ## 🏗️ Tech Stack
 
 | Layer          | Technology                         |
-| --------------------------------------------------- |
+| -------------- | ---------------------------------- |
 | Frontend       | React, Tailwind CSS, Framer Motion |
-|                                                     |
 | Backend        | Django, Django REST Framework      |
-|                                                     |
-| Authentication | SimpleJWT (JWT-based Auth)         | 
-|                                                     |
-| AI Model       | Ollama + Qwen2.5-Coder:7B          | 
-|                                                     |
+| Authentication | SimpleJWT (JWT-based Auth)         |
+| AI Model       | Ollama + Qwen2.5-Coder:7B          |
 | PDF Engine     | ReportLab (Platypus)               |
-|                                                     |
 | DOCX Export    | python-docx                        |
-|-----------------------------------------------------|
-|                                                     |
 
 ---
 
