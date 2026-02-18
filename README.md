@@ -283,5 +283,4 @@ Docker containerization
 
 Role-based access control
 
-Cloud deployment versiong
-```
+Cloud deployment version.
