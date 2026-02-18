@@ -76,7 +76,7 @@ bash
 ----
 DocGen/
 │
-├── backend/
+|----backend/
 │   ├── backend/                 # Django main project
 │   │   ├── __init__.py
 │   │   ├── settings.py
@@ -84,7 +84,7 @@ DocGen/
 │   │   ├── asgi.py
 │   │   └── wsgi.py
 │   │
-│   ├── generator/               # AI Documentation App
+│   |-- generator/               # AI Documentation App
 │   │   ├── migrations/
 │   │   ├── __init__.py
 │   │   ├── admin.py
@@ -124,6 +124,7 @@ DocGen/
 │
 ├── .gitignore
 └── README.md
+
 ----
 
 ## ⚙️ Installation & Setup Guide
