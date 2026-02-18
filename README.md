@@ -1,23 +1,19 @@
-# 🚀 DocGen – Code Documentation Generator
+DocGen is a fully offline AI-powered documentation generator that transforms programming code into structured, professional documentation using a locally running Large Language Model (LLM).
 
-DocGen is a **AI Project** that generates complete professional documentation for any programming code or project file.
+The system integrates a modern React frontend, Django REST backend, and Ollama with the Qwen2.5-Coder model — eliminating dependency on external APIs like OpenAI or Gemini.
 
-DocGen is a fully offline AI-powered documentation generator that automatically converts source code into structured professional documentation using a locally running LLM.
+🧠 Why DocGen?
 
-It integrates a modern React frontend, a Django REST backend, and Ollama with the Qwen2.5-Coder model to generate high-quality documentation without relying on any external API services.
+Most AI documentation tools rely on paid cloud APIs.
+DocGen runs completely offline using a local LLM.
 
-It works completely **offline** using:
+✔ No API cost
+✔ No internet dependency
+✔ Secure local execution
+✔ Full-stack architecture
+✔ Production-ready implementation
 
-- **Ollama**
-- **Qwen2.5-Coder Model**
-- **Django REST Backend**
-- **React + Tailwind Frontend**
-- **PDF Export Support**
-- **Doc Export Support**
-
----
-
-## ✨ Features
+✨ Features
 
 ✅ Paste code and generate documentation instantly
 
@@ -29,58 +25,62 @@ It works completely **offline** using:
 
 ✅ Export documentation as DOCX
 
-✅ Document history tracking
-
 ✅ JWT-based authentication
 
-✅ Clean split-screen UI with blue theme
+✅ Document history tracking
+
+✅ Clean split-screen UI
 
 ✅ Dark mode with animated background
 
-✅ Fully Offline (No OpenAI / No Gemini API required)
----
+✅ Fully Offline (No OpenAI / Gemini required)
 
-## 🏗️ Tech Stack
+🏗️ System Architecture
+User
+  ↓
+React Frontend (UI + API Calls)
+  ↓
+Django REST API
+  ↓
+Ollama (Qwen2.5-Coder:7B Local Model)
+  ↓
+Generated Markdown Documentation
+  ↓
+PDF / DOCX Export
+  ↓
+Download to User
 
-| Layer          | Technology                         |
-| -------------- | ---------------------------------- |
-| Frontend       | React, Tailwind CSS, Framer Motion |
-| Backend        | Django, Django REST Framework      |
-| Authentication | SimpleJWT (JWT-based Auth)         |
-| AI Model       | Ollama + Qwen2.5-Coder:7B          |
-| PDF Engine     | ReportLab (Platypus)               |
-| DOCX Export    | python-docx                        |
-
----
-
-## 📂 DocGen Project Structure
-
-```bash
+🛠️ Tech Stack
+Layer	Technology
+Frontend	React, Tailwind CSS, Framer Motion
+Backend	Django, Django REST Framework
+Authentication	SimpleJWT
+AI Model	Ollama + Qwen2.5-Coder:7B
+PDF Engine	ReportLab (Platypus)
+DOCX Export	python-docx
+📂 Project Structure
 DocGen/
 │
 ├── backend/
-│   ├── backend/
+│   ├── backend/               # Django main project
 │   │   ├── settings.py
 │   │   ├── urls.py
 │   │   ├── asgi.py
 │   │   └── wsgi.py
 │   │
-│   ├── generator/
+│   ├── generator/             # AI Documentation App
 │   │   ├── migrations/
 │   │   ├── models.py
 │   │   ├── serializers.py
 │   │   ├── views.py
 │   │   ├── urls.py
-│   │   └── utils.py
+│   │   └── utils.py           # Ollama + PDF Logic
 │   │
 │   ├── manage.py
 │   └── requirements.txt
 │
 ├── frontend/
 │   ├── public/
-│   │   ├── index.html
-│   │   └── favicon.ico
-│   │
 │   ├── src/
 │   │   ├── components/
 │   │   ├── services/
@@ -92,72 +92,149 @@ DocGen/
 │
 ├── .gitignore
 └── README.md
-```
 
+⚙️ Installation & Setup Guide
+🔹 Prerequisites
 
-# ⚙️ Setup Instructions (Run on Any PC)
+Python 3.10+
 
----
+Node.js + npm
 
-## ✅ 1. Clone Repository
+Ollama installed locally
 
-```powershell
-# Clone and enter repo
+1️⃣ Clone Repository
 git clone https://github.com/SanjayMarathi/DocGen.git
 cd DocGen
-```
-# Start Ollama (pull model if needed)
-```
+
+2️⃣ Setup Ollama (Local LLM)
+
+Pull the model and start Ollama:
+
 ollama pull qwen2.5-coder:7b
 ollama serve
-```
-# Start backend (in another terminal)
-```
+
+
+Ollama runs at:
+
+http://localhost:11434
+
+3️⃣ Backend Setup (Django)
 cd backend
 python -m venv venv
+
+▶ Activate Virtual Environment
+
+Windows (PowerShell)
+
 .\venv\Scripts\activate
+
+
+Mac/Linux (Bash)
+
+source venv/bin/activate
+
+▶ Install Dependencies
+pip install -r requirements.txt
+
+
+If requirements.txt is not available:
+
 pip install django djangorestframework djangorestframework-simplejwt django-cors-headers requests reportlab python-docx wikipedia
+
+▶ Apply Migrations
 python manage.py migrate
+
+▶ Run Backend Server
 python manage.py runserver 8000
-```
 
-The venv activation above for powershell needs to be changed to venv/bin/activate if using bash.
 
-# Start frontend (in a new terminal)
-```
+Backend URL:
+
+http://127.0.0.1:8000
+
+4️⃣ Frontend Setup (React)
 cd frontend
 npm install
 npm start
-```
 
-### Prerequisites
-- **Node.js + npm** (for frontend)
-- **Python 3.10+** (for backend)
-- **Ollama** installed and running locally (project uses `qwen2.5-coder:7b`)
 
-- API endpoints:
-  - POST `http://127.0.0.1:8000/api/generate/`  (streaming documentation)
-  - POST `http://127.0.0.1:8000/api/pdf/`       (returns generated PDF)
+Frontend URL:
 
-### Ollama (Local LLM)
-The backend calls Ollama at `http://localhost:11434`.
+http://localhost:3000
 
-### Quick test
-- Paste or upload code in the UI → Click **Generate Documentation**.
-- Click **EXPORT PDF** to download the generated PDF.
+🔌 API Endpoints
+Method	Endpoint	Description
+POST	/api/generate/	Generate streaming documentation
+POST	/api/pdf/	Export generated documentation as PDF
+POST	/api/docx/	Export generated documentation as DOCX
+🔐 Authentication
 
-### Troubleshooting ⚠️
-- `Model not responding. Check Ollama.` → Ensure Ollama is running and the model is available.
-- If the frontend or backend use different host/ports, update `frontend/src/App.js` and `backend/generator/views.py` accordingly.
-- CORS is already enabled in `backend/settings.py` (`CORS_ALLOW_ALL_ORIGINS = True`).
+JWT-based authentication (SimpleJWT)
 
-### Convenience tip
-If you want `npm start` to start the frontend from the repo root, add this script to the root `package.json` under `scripts`:
+Token-based API communication
 
-```json
-"scripts": {
-  "start": "npm --prefix frontend start"
-}
-```
+Document history linked to user account
 
----
+📄 PDF & DOCX Generation
+
+PDF export uses ReportLab Platypus Engine
+DOCX export uses python-docx
+
+Provides:
+
+Structured headings
+
+Code block formatting
+
+Professional layout
+
+Instant download
+
+🧪 Quick Test
+
+Start Ollama
+
+Start Backend
+
+Start Frontend
+
+Paste or upload code
+
+Click Generate Documentation
+
+Click Export PDF / DOCX
+
+⚠️ Troubleshooting
+🔹 Model not responding
+ollama list
+
+
+If model missing:
+
+ollama pull qwen2.5-coder:7b
+
+🔹 CORS Issues
+
+Already enabled in settings.py:
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+🔹 Port Conflict
+
+Update ports in:
+
+frontend/src/App.js
+
+backend/generator/views.py
+
+🚀 Future Improvements
+
+Markdown live preview panel
+
+Multi-language documentation templates
+
+Docker containerization
+
+Role-based access control
+
+Cloud deployment versiong
