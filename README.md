@@ -1,8 +1,9 @@
+## AI POWERED DOCUMET GENERATION
 DocGen is a fully offline AI-powered documentation generator that transforms programming code into structured, professional documentation using a locally running Large Language Model (LLM).
 
 The system integrates a modern React frontend, Django REST backend, and Ollama with the Qwen2.5-Coder model — eliminating dependency on external APIs like OpenAI or Gemini.
 
-🧠 Why DocGen?
+## 🧠 Why DocGen?
 
 Most AI documentation tools rely on paid cloud APIs.
 DocGen runs completely offline using a local LLM.
@@ -13,7 +14,7 @@ DocGen runs completely offline using a local LLM.
 ✔ Full-stack architecture
 ✔ Production-ready implementation
 
-✨ Features
+## ✨ Features
 
 ✅ Paste code and generate documentation instantly
 
@@ -35,7 +36,7 @@ DocGen runs completely offline using a local LLM.
 
 ✅ Fully Offline (No OpenAI / Gemini required)
 
-🏗️ System Architecture
+## 🏗️ System Architecture
 User
   ↓
 React Frontend (UI + API Calls)
@@ -50,7 +51,7 @@ PDF / DOCX Export
   ↓
 Download to User
 
-🛠️ Tech Stack
+## 🛠️ Tech Stack
 Layer	Technology
 Frontend	React, Tailwind CSS, Framer Motion
 Backend	Django, Django REST Framework
@@ -58,7 +59,7 @@ Authentication	SimpleJWT
 AI Model	Ollama + Qwen2.5-Coder:7B
 PDF Engine	ReportLab (Platypus)
 DOCX Export	python-docx
-📂 Project Structure
+## 📂 Project Structure
 DocGen/
 │
 ├── backend/
@@ -93,8 +94,8 @@ DocGen/
 ├── .gitignore
 └── README.md
 
-⚙️ Installation & Setup Guide
-🔹 Prerequisites
+## ⚙️ Installation & Setup Guide
+# 🔹 Prerequisites
 
 Python 3.10+
 
@@ -102,11 +103,11 @@ Node.js + npm
 
 Ollama installed locally
 
-1️⃣ Clone Repository
+## 1️⃣ Clone Repository
 git clone https://github.com/SanjayMarathi/DocGen.git
 cd DocGen
 
-2️⃣ Setup Ollama (Local LLM)
+## 2️⃣ Setup Ollama (Local LLM)
 
 Pull the model and start Ollama:
 
@@ -118,11 +119,11 @@ Ollama runs at:
 
 http://localhost:11434
 
-3️⃣ Backend Setup (Django)
+## 3️⃣ Backend Setup (Django)
 cd backend
 python -m venv venv
 
-▶ Activate Virtual Environment
+## ▶ Activate Virtual Environment
 
 Windows (PowerShell)
 
@@ -133,7 +134,7 @@ Mac/Linux (Bash)
 
 source venv/bin/activate
 
-▶ Install Dependencies
+## ▶ Install Dependencies
 pip install -r requirements.txt
 
 
@@ -141,33 +142,33 @@ If requirements.txt is not available:
 
 pip install django djangorestframework djangorestframework-simplejwt django-cors-headers requests reportlab python-docx wikipedia
 
-▶ Apply Migrations
+## ▶ Apply Migrations
 python manage.py migrate
 
-▶ Run Backend Server
+## ▶ Run Backend Server
 python manage.py runserver 8000
 
 
-Backend URL:
+## Backend URL:
 
 http://127.0.0.1:8000
 
-4️⃣ Frontend Setup (React)
+## 4️⃣ Frontend Setup (React)
 cd frontend
 npm install
 npm start
 
 
-Frontend URL:
+## Frontend URL:
 
 http://localhost:3000
 
-🔌 API Endpoints
+## 🔌 API Endpoints
 Method	Endpoint	Description
 POST	/api/generate/	Generate streaming documentation
 POST	/api/pdf/	Export generated documentation as PDF
 POST	/api/docx/	Export generated documentation as DOCX
-🔐 Authentication
+## 🔐 Authentication
 
 JWT-based authentication (SimpleJWT)
 
@@ -175,12 +176,12 @@ Token-based API communication
 
 Document history linked to user account
 
-📄 PDF & DOCX Generation
+## 📄 PDF & DOCX Generation
 
 PDF export uses ReportLab Platypus Engine
 DOCX export uses python-docx
 
-Provides:
+## Provides:
 
 Structured headings
 
@@ -190,7 +191,7 @@ Professional layout
 
 Instant download
 
-🧪 Quick Test
+## 🧪 Quick Test
 
 Start Ollama
 
@@ -204,8 +205,8 @@ Click Generate Documentation
 
 Click Export PDF / DOCX
 
-⚠️ Troubleshooting
-🔹 Model not responding
+## ⚠️ Troubleshooting
+# Model not responding
 ollama list
 
 
@@ -213,13 +214,13 @@ If model missing:
 
 ollama pull qwen2.5-coder:7b
 
-🔹 CORS Issues
+## CORS Issues
 
 Already enabled in settings.py:
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-🔹 Port Conflict
+## Port Conflict
 
 Update ports in:
 
@@ -227,7 +228,7 @@ frontend/src/App.js
 
 backend/generator/views.py
 
-🚀 Future Improvements
+## 🚀 Future Improvements
 
 Markdown live preview panel
 
