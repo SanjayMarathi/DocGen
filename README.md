@@ -53,6 +53,64 @@ It works completely **offline** using:
 
 ---
 
+# DocGen Project Structure
+
+DocGen/
+│
+├── backend/
+│   ├── backend/                 # Django main project folder
+│   │   ├── __init__.py
+│   │   ├── asgi.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   │
+│   ├── generator/               # Main app for AI generation
+│   │   ├── migrations/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── views.py
+│   │   ├── urls.py
+│   │   └── utils.py             # Ollama + PDF logic
+│   │
+│   ├── manage.py
+│   ├── requirements.txt
+│   └── venv/ (ignored in .gitignore)
+│
+├── frontend/
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   └── manifest.json
+│   │
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Login.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Editor.jsx
+│   │   │   └── History.jsx
+│   │   │
+│   │   ├── services/
+│   │   │   └── api.js           # API calls to Django
+│   │   │
+│   │   ├── App.js
+│   │   ├── index.js
+│   │   └── App.css
+│   │
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   └── .gitignore
+│
+├── .gitignore
+├── README.md
+└── package.json (optional root script for frontend start)
+
+---
+
 # ⚙️ Setup Instructions (Run on Any PC)
 
 ---
