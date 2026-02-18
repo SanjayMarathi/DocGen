@@ -125,24 +125,23 @@ DocGen/
 └── README.md
 ```
 
-```text
+
 ## ⚙️ Installation & Setup Guide
 # 🔹 Prerequisites
-
+```text
 Python 3.10+
 
 Node.js + npm
 
 Ollama installed locally
 ```
-```text
 ## 1️⃣ Clone Repository
+```text
 git clone https://github.com/SanjayMarathi/DocGen.git
 cd DocGen
 ```
-```text
 ## 2️⃣ Setup Ollama (Local LLM)
-
+```text
 Pull the model and start Ollama:
 
 ollama pull qwen2.5-coder:7b
@@ -153,14 +152,14 @@ Ollama runs at:
 
 http://localhost:11434
 ```
-```text
 ## 3️⃣ Backend Setup (Django)
+```text
 cd backend
 python -m venv venv
 ```
-```text
-## ▶ Activate Virtual Environment
 
+## ▶ Activate Virtual Environment
+```text
 Windows (PowerShell)
 
 .\venv\Scripts\activate
@@ -170,8 +169,9 @@ Mac/Linux (Bash)
 
 source venv/bin/activate
 ```
-```text
+
 ## ▶ Install Dependencies
+```text
 pip install -r requirements.txt
 
 
@@ -179,49 +179,54 @@ If requirements.txt is not available:
 
 pip install django djangorestframework djangorestframework-simplejwt django-cors-headers requests reportlab python-docx wikipedia
 ```
-```text
+
 ## ▶ Apply Migrations
+```text
 python manage.py migrate
 ```
-```text
-## ▶ Run Backend Server
-python manage.py runserver 8000
 
+## ▶ Run Backend Server
+```text
+python manage.py runserver 8000
+```
 
 ## Backend URL:
-
+```text
 http://127.0.0.1:8000
 ```
 ## 4️⃣ Frontend Setup (React)
+```text
 cd frontend
 npm install
 npm start
-
+```
 
 ## Frontend URL:
-
+```text
 http://localhost:3000
-
+```
 ## 🔌 API Endpoints
+```text
 Method	Endpoint	Description
 POST	/api/generate/	Generate streaming documentation
 POST	/api/pdf/	Export generated documentation as PDF
 POST	/api/docx/	Export generated documentation as DOCX
+```
 ## 🔐 Authentication
-
+```text
 JWT-based authentication (SimpleJWT)
 
 Token-based API communication
 
 Document history linked to user account
-
+```
 ## 📄 PDF & DOCX Generation
-
+```text
 PDF export uses ReportLab Platypus Engine
 DOCX export uses python-docx
-
+```
 ## Provides:
-
+```text
 Structured headings
 
 Code block formatting
@@ -229,9 +234,9 @@ Code block formatting
 Professional layout
 
 Instant download
-
+```
 ## 🧪 Quick Test
-
+```text
 Start Ollama
 
 Start Backend
@@ -243,9 +248,10 @@ Paste or upload code
 Click Generate Documentation
 
 Click Export PDF / DOCX
-
+```
 ## ⚠️ Troubleshooting
 # Model not responding
+```text
 ollama list
 
 
@@ -266,9 +272,9 @@ Update ports in:
 frontend/src/App.js
 
 backend/generator/views.py
-
+```
 ## 🚀 Future Improvements
-
+```text
 Markdown live preview panel
 
 Multi-language documentation templates
@@ -278,3 +284,4 @@ Docker containerization
 Role-based access control
 
 Cloud deployment versiong
+---
