@@ -72,28 +72,27 @@ Download to User
 ---
 
 ## 📂 Project Structure
-bash
-----
+
+```text
 DocGen/
 │
-|----backend/
-│   ├── backend/                 # Django main project
+├── backend/
+│   ├── backend/
 │   │   ├── __init__.py
 │   │   ├── settings.py
 │   │   ├── urls.py
 │   │   ├── asgi.py
 │   │   └── wsgi.py
 │   │
-│   |-- generator/               # AI Documentation App
+│   ├── generator/
 │   │   ├── migrations/
-│   │   ├── __init__.py
 │   │   ├── admin.py
 │   │   ├── apps.py
 │   │   ├── models.py
 │   │   ├── serializers.py
 │   │   ├── views.py
 │   │   ├── urls.py
-│   │   └── utils.py             # Ollama + PDF Logic
+│   │   └── utils.py
 │   │
 │   ├── manage.py
 │   └── requirements.txt
@@ -124,8 +123,8 @@ DocGen/
 │
 ├── .gitignore
 └── README.md
+```
 
-----
 
 ## ⚙️ Installation & Setup Guide
 # 🔹 Prerequisites
