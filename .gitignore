@@ -62,3 +62,6 @@ Thumbs.db
 
 *.zip
 *.rar
+
+db.sqlite3
+node_modules/
