@@ -16,9 +16,6 @@ from .docx_generator import create_docx
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
 
-# =========================================================
-# INTERNET CHECK
-# =========================================================
 def internet_available():
     try:
         socket.create_connection(("8.8.8.8", 53), timeout=2)
@@ -27,35 +24,65 @@ def internet_available():
         return False
 
 
-# =========================================================
-# REAL DATA DETECTOR
-# =========================================================
 def needs_real_data(text):
     keywords = [
-        "who", "when", "where", "age", "born",
-        "stats", "record", "population", "president",
-        "prime minister", "version", "release",
-        "latest", "data", "information", "history", "summary"
+        "who",
+        "when",
+        "where",
+        "age",
+        "born",
+        "stats",
+        "record",
+        "population",
+        "president",
+        "prime minister",
+        "version",
+        "release",
+        "latest",
+        "data",
+        "information",
+        "history",
+        "summary",
     ]
     text = text.lower()
     return any(k in text for k in keywords)
 
 
-# =========================================================
-# INPUT TYPE DETECTOR  ⭐ IMPORTANT
-# =========================================================
 def detect_input_type(text: str):
     text_lower = text.lower().strip()
 
     code_symbols = [
-        "{", "}", ";", "()", "[]", "=>", "::", "#include",
-        "def ", "class ", "public ", "private ", "</", "/>",
-        "printf", "cout", "cin"
+        "{",
+        "}",
+        ";",
+        "()",
+        "[]",
+        "=>",
+        "::",
+        "#include",
+        "def ",
+        "class ",
+        "public ",
+        "private ",
+        "</",
+        "/> ",
+        "printf",
+        "cout",
+        "cin",
     ]
 
     algorithm_words = [
-        "problem", "leetcode", "codeforces", "find", "return",
-        "array", "integer", "sum", "subarray", "graph", "tree"
+        "problem",
+        "leetcode",
+        "codeforces",
+        "find",
+        "return",
+        "array",
+        "integer",
+        "sum",
+        "subarray",
+        "graph",
+        "tree",
     ]
 
     if any(sym in text for sym in code_symbols) or "\n" in text:
@@ -70,9 +97,6 @@ def detect_input_type(text: str):
     return "concept"
 
 
-# =========================================================
-# WIKIPEDIA FETCH
-# =========================================================
 def fetch_wikipedia(query):
     try:
         wikipedia.set_lang("en")
@@ -93,9 +117,6 @@ def fetch_wikipedia(query):
         return ""
 
 
-# =========================================================
-# AUTH
-# =========================================================
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register_user(request):
@@ -118,7 +139,7 @@ def get_user_info(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_history(request):
-    data = DocHistory.objects.filter(user=request.user).order_by('-created_at').values()
+    data = DocHistory.objects.filter(user=request.user).order_by("-created_at").values()
     return Response(list(data))
 
 
@@ -135,9 +156,6 @@ def connection_status(request):
     return Response({"online": internet_available()})
 
 
-# =========================================================
-# MAIN GENERATION
-# =========================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def generate_documentation(request):
@@ -145,8 +163,7 @@ def generate_documentation(request):
 
     if not user_input:
         return StreamingHttpResponse("Please enter a topic.", content_type="text/plain")
-    
-    # Create DB Entry
+
     title = " ".join(user_input.split()[:5])[:30] or "New Doc"
     doc_entry = DocHistory.objects.create(user=request.user, topic=title, content="")
 
@@ -156,10 +173,15 @@ def generate_documentation(request):
     if online and (needs_real_data(user_input) or len(user_input) < 150):
         web_context = fetch_wikipedia(user_input)
 
-    # ================= PROMPT =================
     if web_context:
         prompt = f"""
 You are a documentation formatter AI.
+
+STRICT OUTPUT FORMAT:
+Return ONLY valid GitHub Markdown.
+Use headings hierarchy properly: # ## ### #### #####
+Always use bullet points and sections.
+Do NOT output plain paragraphs without headings.
 
 IMPORTANT RULE:
 You are NOT allowed to change ANY factual values.
@@ -170,39 +192,32 @@ VERIFIED DATA:
 {web_context}
 
 TASK:
-Convert into structured documentation using headings and bullet points.
+Convert into structured documentation.
 """
         warning = "online"
     else:
         prompt = f"""
 You are a professional documentation writer.
 
-Explain the topic in structured documentation style.
-Use headings, sections, examples and detailed explanation.
+STRICT OUTPUT FORMAT:
+Return ONLY valid GitHub Markdown.
+Use headings hierarchy properly: # ## ### #### #####
+Every section must have headings and bullet points.
+Avoid long plain text blocks.
 
 Topic: {user_input}
 """
         warning = "offline"
 
-    # ================= MODEL SELECTION =================
     user_model = request.data.get("model", "qwen2.5-coder:3b")
 
-    ALLOWED_MODELS = [
-        "phi3:mini",
-        "qwen2.5-coder:3b",
-        "qwen2.5-coder:7b"
-    ]
+    ALLOWED_MODELS = ["qwen2.5-coder:3b", "qwen2.5-coder:7b"]
 
     if user_model not in ALLOWED_MODELS:
         user_model = "qwen2.5-coder:3b"
 
-    payload = {
-        "model": user_model,
-        "prompt": prompt,
-        "stream": True
-    }
+    payload = {"model": user_model, "prompt": prompt, "stream": True}
 
-    # ================= STREAM =================
     def stream():
         yield json.dumps({"id": doc_entry.id}) + "\n"
 
@@ -220,7 +235,7 @@ Topic: {user_input}
                     chunk = data["response"]
                     full_text += chunk
                     yield chunk
-            
+
             if full_text:
                 doc_entry.content = full_text
                 doc_entry.save()
@@ -233,9 +248,7 @@ Topic: {user_input}
     resp["Cache-Control"] = "no-cache"
     return resp
 
-# =========================================================
-# DOWNLOADS
-# =========================================================
+
 @api_view(["POST"])
 def download_pdf(request):
     docs = request.data.get("docs", "")
@@ -245,7 +258,12 @@ def download_pdf(request):
     pdf_buffer = create_pdf(docs)
     pdf_buffer.seek(0)
 
-    return FileResponse(pdf_buffer, as_attachment=True, filename="Doc.pdf", content_type="application/pdf")
+    return FileResponse(
+        pdf_buffer,
+        as_attachment=True,
+        filename="Doc.pdf",
+        content_type="application/pdf",
+    )
 
 
 @api_view(["POST"])
