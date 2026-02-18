@@ -53,63 +53,47 @@ It works completely **offline** using:
 
 ---
 
-# DocGen Project Structure
+## 📂 DocGen Project Structure
 
+```bash
 DocGen/
 │
 ├── backend/
-│   ├── backend/                 # Django main project folder
-│   │   ├── __init__.py
-│   │   ├── asgi.py
+│   ├── backend/
 │   │   ├── settings.py
 │   │   ├── urls.py
+│   │   ├── asgi.py
 │   │   └── wsgi.py
 │   │
-│   ├── generator/               # Main app for AI generation
+│   ├── generator/
 │   │   ├── migrations/
-│   │   ├── __init__.py
-│   │   ├── admin.py
-│   │   ├── apps.py
 │   │   ├── models.py
 │   │   ├── serializers.py
 │   │   ├── views.py
 │   │   ├── urls.py
-│   │   └── utils.py             # Ollama + PDF logic
+│   │   └── utils.py
 │   │
 │   ├── manage.py
-│   ├── requirements.txt
-│   └── venv/ (ignored in .gitignore)
+│   └── requirements.txt
 │
 ├── frontend/
 │   ├── public/
 │   │   ├── index.html
-│   │   ├── favicon.ico
-│   │   └── manifest.json
+│   │   └── favicon.ico
 │   │
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Login.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Editor.jsx
-│   │   │   └── History.jsx
-│   │   │
 │   │   ├── services/
-│   │   │   └── api.js           # API calls to Django
-│   │   │
 │   │   ├── App.js
-│   │   ├── index.js
-│   │   └── App.css
+│   │   └── index.js
 │   │
 │   ├── package.json
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   └── .gitignore
+│   └── tailwind.config.js
 │
 ├── .gitignore
-├── README.md
-└── package.json (optional root script for frontend start)
+└── README.md
+```
 
----
 
 # ⚙️ Setup Instructions (Run on Any PC)
 
