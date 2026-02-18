@@ -2,6 +2,10 @@
 
 DocGen is a **AI Project** that generates complete professional documentation for any programming code or project file.
 
+DocGen is a fully offline AI-powered documentation generator that automatically converts source code into structured professional documentation using a locally running LLM.
+
+It integrates a modern React frontend, a Django REST backend, and Ollama with the Qwen2.5-Coder model to generate high-quality documentation without relying on any external API services.
+
 It works completely **offline** using:
 
 - **Ollama**
@@ -16,24 +20,43 @@ It works completely **offline** using:
 ## ✨ Features
 
 ✅ Paste code and generate documentation instantly
-✅ Upload code files (.py, .cpp, .java, .js)
-✅ AI-generated structured Markdown documentation
-✅ Export documentation as PDF or DOCX format
-✅ Clean, modern UI with split-screen login and blue theme
-✅ Dark mode support with animated background
-✅ Document history tracking and management
-✅ Fully Offline (No OpenAI / No Gemini API needed)
 
+✅ Upload .py, .cpp, .java, .js files
+
+✅ AI-generated structured Markdown documentation
+
+✅ Export documentation as PDF
+
+✅ Export documentation as DOCX
+
+✅ Document history tracking
+
+✅ JWT-based authentication
+
+✅ Clean split-screen UI with blue theme
+
+✅ Dark mode with animated background
+
+✅ Fully Offline (No OpenAI / No Gemini API required)
 ---
 
 ## 🏗️ Tech Stack
 
-| Layer | Technology |
-|------|------------|
-| Frontend | React, Tailwind CSS, Framer Motion |
-| Backend | Django, Django REST Framework |
-| AI Model | Ollama + Qwen2.5-Coder:7B |
-| PDF Generator | ReportLab (Platypus Engine) |
+| Layer          | Technology                         |
+| --------------------------------------------------- |
+| Frontend       | React, Tailwind CSS, Framer Motion |
+|                                                     |
+| Backend        | Django, Django REST Framework      |
+|                                                     |
+| Authentication | SimpleJWT (JWT-based Auth)         | 
+|                                                     |
+| AI Model       | Ollama + Qwen2.5-Coder:7B          | 
+|                                                     |
+| PDF Engine     | ReportLab (Platypus)               |
+|                                                     |
+| DOCX Export    | python-docx                        |
+|-----------------------------------------------------|
+|                                                     |
 
 ---
 
