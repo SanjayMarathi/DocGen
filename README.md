@@ -1,4 +1,4 @@
-## AI POWERED DOCUMET GENERATION
+## AI POWERED DOCUMENT GENERATION
 DocGen is a fully offline AI-powered documentation generator that transforms programming code into structured, professional documentation using a locally running Large Language Model (LLM).
 
 The system integrates a modern React frontend, Django REST backend, and Ollama with the Qwen2.5-Coder model — eliminating dependency on external APIs like OpenAI or Gemini.
