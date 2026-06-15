@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import ProjectInfo from './ProjectInfo';
 
-export default function AuthPage({ handleAuthSubmit }) {
+export default function AuthPage({ handleAuth }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const isRegister = location.pathname === '/register';
   
   const [username, setUsername] = useState("");
@@ -17,19 +18,19 @@ export default function AuthPage({ handleAuthSubmit }) {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    handleAuthSubmit(username, password, isRegister);
+    handleAuth(username, password, isRegister);
   };
 
   return (
-    <div className="min-h-screen flex bg-white font-sans text-[#111111]">
+    <div className="min-h-screen flex bg-white dark:bg-[#0a0a0a] font-sans text-[#111111] dark:text-gray-100 transition-colors duration-300">
       {/* LEFT SIDE - FORM */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 border-r border-[#f0f0f0]">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 border-r border-[#f0f0f0] dark:border-[#2a2a2a]">
         <div className="w-full max-w-md animate-fadeUp">
           <h2 className="text-3xl font-light mb-2 tracking-tight">
-            {isRegister ? "Create account" : "Welcome back"}
+            {isRegister ? "Create Account" : "Sign In"}
           </h2>
-          <p className="text-[#999999] text-sm mb-10 font-mono">
-            {isRegister ? "Join to generate docs" : "Please enter your details"}
+          <p className="text-[#999999] dark:text-gray-400 text-sm mb-10 font-mono">
+            {isRegister ? "Join to generate docs" : "Welcome back. Please enter your details"}
           </p>
 
           <form onSubmit={onSubmit} className="space-y-6">
@@ -38,7 +39,7 @@ export default function AuthPage({ handleAuthSubmit }) {
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border-b border-[#dddddd] bg-transparent outline-none focus:border-[#2dd4a8] transition-colors text-sm"
+                className="w-full px-4 py-3 border-b border-[#dddddd] dark:border-[#333333] bg-transparent outline-none focus:border-[#2dd4a8] transition-colors text-sm"
                 placeholder="Enter your username"
                 required
               />
@@ -50,21 +51,21 @@ export default function AuthPage({ handleAuthSubmit }) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-b border-[#dddddd] bg-transparent outline-none focus:border-[#2dd4a8] transition-colors text-sm"
+                className="w-full px-4 py-3 border-b border-[#dddddd] dark:border-[#333333] bg-transparent outline-none focus:border-[#2dd4a8] transition-colors text-sm"
                 placeholder="Enter your password"
                 required
               />
             </div>
 
-            <button type="submit" className="w-full py-4 bg-[#111111] text-white text-sm font-medium hover:bg-[#2dd4a8] transition-colors mt-8">
-              {isRegister ? "Sign Up" : "Sign In"}
+            <button type="submit" className="w-full py-4 bg-[#111111] dark:bg-white text-white dark:text-black text-sm font-bold hover:bg-[#2dd4a8] dark:hover:bg-[#2dd4a8] transition-colors mt-8 rounded-none">
+              {isRegister ? "Create Account" : "Sign In"}
             </button>
           </form>
 
-          <div className="mt-8 text-center text-xs text-[#999999]">
+          <div className="mt-8 text-center text-xs text-[#999999] dark:text-gray-500">
             {isRegister ? "Already have an account? " : "Don't have an account? "}
-            <Link to={isRegister ? "/login" : "/register"} className="text-[#111111] font-semibold hover:text-[#2dd4a8] transition-colors">
-              {isRegister ? "Sign in" : "Create one"}
+            <Link to={isRegister ? "/login" : "/register"} className="text-[#111111] dark:text-white font-bold hover:text-[#2dd4a8] dark:hover:text-[#2dd4a8] transition-colors">
+              {isRegister ? "Sign In" : "Create Account"}
             </Link>
           </div>
         </div>
