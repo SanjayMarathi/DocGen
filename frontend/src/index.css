@@ -1,90 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --black: #111111;
+  --dark: #1a1a1a;
+  --gray-800: #333333;
+  --gray-600: #555555;
+  --gray-400: #999999;
+  --gray-300: #bbbbbb;
+  --gray-200: #dddddd;
+  --gray-100: #f0f0f0;
+  --white: #ffffff;
+  --teal: #2dd4a8;
+  --teal-light: rgba(45, 212, 168, 0.12);
+  --red-soft: #e74c3c;
+  --transition: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0a0a0a;
-  color: white;
+  background-color: var(--white);
+  color: var(--black);
+  min-height: 100vh;
+  line-height: 1.6;
 }
 
-/* Dark Mode Scrollbar */
+/* Animations */
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeUp {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-}
-
-/* Light Mode Scrollbar */
-.light-theme ::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
-.light-theme ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.25);
-}
-
-/* Custom Scrollbar for specific elements */
-.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
-.custom-scrollbar::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: transparent;
 }
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15);
+::-webkit-scrollbar-thumb {
+  background-color: var(--gray-200);
   border-radius: 10px;
 }
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.25);
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--gray-300);
 }
 
-/* Animated Background - Dark Mode (Grey) */
-.animated-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(128, 128, 128, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(128, 128, 128, 0.08) 1px, transparent 1px);
-  background-size: 50px 50px;
-  animation: moveGrid 20s linear infinite;
+/* Paasa dotted background pattern */
+.paasa-bg {
+  background-color: #ffffff;
+  background-image: radial-gradient(rgba(45, 212, 168, 0.25) 1px, transparent 1px);
+  background-size: 80px 80px;
+  background-position: 0 0, 40px 40px;
 }
 
-@keyframes moveGrid {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 50px 50px;
-  }
+/* Typography styles for Paasa */
+.paasa-heading {
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--black);
 }
 
-/* Animated Background - Light Mode */
-.light-theme .animated-bg {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+.paasa-subtitle {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--gray-400);
+  letter-spacing: 0.05em;
+}
+
+/* Custom accent line */
+.paasa-line {
+  height: 1px;
+  background-color: var(--teal);
+  width: 100%;
 }
