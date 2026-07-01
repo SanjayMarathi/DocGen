@@ -26,6 +26,10 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 # Ensure whitenoise is installed for static file serving
 RUN pip install --no-cache-dir whitenoise
 
+# Configure Ollama models directory with write permissions for user 1000
+RUN mkdir -p /.ollama/models && chmod -R 777 /.ollama
+ENV OLLAMA_MODELS=/.ollama/models
+
 # Copy backend code
 COPY backend/ ./backend/
 
@@ -35,6 +39,9 @@ COPY --from=frontend-build /app/frontend/build /app/frontend/build
 # Copy and setup start script
 COPY start.sh /app/
 RUN chmod +x /app/start.sh
+
+# Make the app directory writable for Hugging Face user 1000
+RUN chmod -R 777 /app
 
 # Expose the Hugging Face space port
 EXPOSE 7860
