@@ -1,3 +1,12 @@
+---
+title: DocGen
+emoji: 📝
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 ## AI POWERED DOCUMENT GENERATION
 DocGen is a fully offline AI-powered documentation generator that transforms programming code into structured, professional documentation using a locally running Large Language Model (LLM).
 
