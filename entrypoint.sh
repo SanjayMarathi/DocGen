@@ -12,10 +12,14 @@ ollama pull qwen2.5-coder:3b
 export PYTHONPATH=$PYTHONPATH:/app/backend
 
 echo "Running migrations..."
+cd backend || exit
 python manage.py migrate --noinput
 
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
+
+echo "Creating demo user..."
+python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='demo').exists() or User.objects.create_user('demo', 'demo@example.com', 'demouser')"
 
 echo "Starting Gunicorn with Threads..."
 # Added --threads to handle streaming better without blocking the main worker
