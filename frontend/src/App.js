@@ -754,127 +754,210 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
   const [pass, setPass] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [loading, setLoading] = useState(false);
   const isDark = theme === "dark";
 
+  const features = [
+    { icon: <FileText size={20} />, title: "Smart Analysis", desc: "AI breaks down your code into clear explanations" },
+    { icon: <ShieldCheck size={20} />, title: "Secure Storage", desc: "Documents saved safely to your personal account" },
+    { icon: <Download size={20} />, title: "Export Anywhere", desc: "One-click PDF and DOCX generation" },
+    { icon: <Globe size={20} />, title: "Always Accessible", desc: "Access your docs from any device, anytime" },
+  ];
+
   return (
-    <div
-      className={`min-h-screen flex flex-col items-center justify-center p-4 ${isDark ? "bg-[#18181b] text-white" : "bg-[#f9fafb] text-black"}`}
-    >
-      <div className="text-center mb-6 max-w-2xl">
-        <h2 className="text-xl font-medium opacity-80 mb-2">Welcome to</h2>
-        <h1 className="text-5xl font-bold mb-4">DocGen</h1>
-        <p className="text-lg opacity-80 leading-relaxed text-left">
-          DocGen is an advanced, automated documentation engine designed to streamline the software development lifecycle. By seamlessly transforming complex, raw source code into beautifully structured, professional technical documents, it eliminates the tedious manual effort traditionally required to maintain up-to-date documentation.
-        </p>
-      </div>
-      <div
-        className={`w-full max-w-md p-8 rounded-2xl shadow-sm border ${isDark ? "bg-[#27272a] border-[#3f3f46]" : "bg-white border-gray-200"}`}
-      >
-        <div className="text-center mb-6">
-          <p className="text-sm font-semibold opacity-70">
-            {isLogin ? "Login to access your workspace" : "Register a new account"}
+    <div className={`min-h-screen flex ${isDark ? "bg-[#0a0a0b] text-white" : "bg-[#f0f2f5] text-gray-900"}`}>
+      {/* ── Left Panel: Brand + Features ── */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden flex-col justify-between p-12">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0" style={{
+          background: isDark
+            ? "linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #172554 65%, #0c0a09 100%)"
+            : "linear-gradient(135deg, #dbeafe 0%, #e0e7ff 35%, #c7d2fe 65%, #bfdbfe 100%)",
+        }} />
+        {/* Decorative circles */}
+        <div className={`absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full ${isDark ? "bg-indigo-500/10" : "bg-indigo-400/20"} blur-3xl`} />
+        <div className={`absolute bottom-[-15%] left-[-10%] w-[600px] h-[600px] rounded-full ${isDark ? "bg-blue-500/8" : "bg-blue-300/25"} blur-3xl`} />
+        <div className={`absolute top-[40%] left-[30%] w-[300px] h-[300px] rounded-full ${isDark ? "bg-violet-500/5" : "bg-violet-300/15"} blur-2xl`} />
+
+        {/* Top: Logo */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark ? "bg-white/10" : "bg-indigo-600"}`}>
+              <FileText size={20} className={isDark ? "text-indigo-400" : "text-white"} />
+            </div>
+            <span className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-indigo-900"}`}>DocGen</span>
+          </div>
+        </div>
+
+        {/* Center: Headline */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center max-w-lg">
+          <h1 className={`text-5xl font-extrabold leading-tight mb-6 ${isDark ? "text-white" : "text-gray-900"}`}>
+            Turn your code into
+            <span className={`block ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>documentation.</span>
+          </h1>
+          <p className={`text-lg leading-relaxed mb-10 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+            DocGen transforms complex source code into beautifully structured, professional technical documents — instantly and effortlessly.
+          </p>
+
+          {/* Feature grid */}
+          <div className="grid grid-cols-2 gap-4">
+            {features.map((f, i) => (
+              <div key={i} className={`flex items-start gap-3 p-4 rounded-xl ${isDark ? "bg-white/5 border border-white/5" : "bg-white/60 border border-white/80 shadow-sm"}`}>
+                <div className={`mt-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>{f.icon}</div>
+                <div>
+                  <div className={`text-sm font-semibold mb-0.5 ${isDark ? "text-white" : "text-gray-900"}`}>{f.title}</div>
+                  <div className={`text-xs leading-relaxed ${isDark ? "text-gray-500" : "text-gray-500"}`}>{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom: Footer */}
+        <div className="relative z-10">
+          <p className={`text-xs ${isDark ? "text-gray-600" : "text-gray-500"}`}>
+            &copy; {new Date().getFullYear()} DocGen &middot; docgenindia@gmail.com
           </p>
         </div>
-        
-        {errorMsg && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg text-sm text-center">
-            {errorMsg}
-          </div>
-        )}
-        {successMsg && (
-          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/50 text-green-500 rounded-lg text-sm text-center">
-            {successMsg}
-          </div>
-        )}
+      </div>
 
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setErrorMsg("");
-            setSuccessMsg("");
-            const res = await onAuth(isLogin ? "login" : "register", {
-              username: user,
-              password: pass,
-            });
-            if (res && !res.success) {
-              setErrorMsg(res.error);
-            } else if (res && res.message) {
-              setSuccessMsg(res.message);
-              if (!isLogin) {
-                setUser("");
-                setPass("");
-              }
-            }
-          }}
-          className="space-y-4"
+      {/* ── Right Panel: Auth Form ── */}
+      <div className={`w-full lg:w-[45%] flex flex-col items-center justify-center px-6 py-12 relative ${isDark ? "bg-[#0a0a0b]" : "bg-white"}`}>
+        {/* Theme toggle */}
+        <button
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          className={`absolute top-6 right-6 p-2.5 rounded-full ${isDark ? "bg-white/5 hover:bg-white/10 text-gray-400" : "bg-gray-100 hover:bg-gray-200 text-gray-600"}`}
         >
-          <input
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-            placeholder="Username"
-            className={`w-full p-3 rounded-lg border outline-none ${isDark ? "bg-[#18181b] border-[#3f3f46]" : "bg-white"}`}
-            required
-          />
-          <input
-            type="password"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            placeholder="Password"
-            className={`w-full p-3 rounded-lg border outline-none ${isDark ? "bg-[#18181b] border-[#3f3f46]" : "bg-white"}`}
-            required
-          />
-          <div className="flex gap-2">
-            <button className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg">
-              {isLogin ? "Login" : "Register"}
-            </button>
-            {isLogin && (
-              <button 
-                type="button" 
-                onClick={() => {
-                  setUser("demo");
-                  setPass("demouser");
-                  onAuth("login", { username: "demo", password: "demouser" });
-                }}
-                className={`flex-1 py-3 font-semibold rounded-lg border ${isDark ? "border-[#3f3f46] hover:bg-[#3f3f46]" : "border-gray-300 hover:bg-gray-100"}`}
-              >
-                Demo Login
-              </button>
-            )}
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+
+        {/* Mobile logo (shown only on small screens) */}
+        <div className="lg:hidden mb-10 text-center">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 ${isDark ? "bg-indigo-500/20" : "bg-indigo-600"}`}>
+            <FileText size={24} className={isDark ? "text-indigo-400" : "text-white"} />
           </div>
-        </form>
-        <div className="mt-6 flex flex-col items-center gap-4">
-          <button
-            onClick={() => {
-              setErrorMsg("");
-              setSuccessMsg("");
-              navigate(isLogin ? "/register" : "/login");
-            }}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            {isLogin ? "Register instead" : "Login instead"}
-          </button>
-          <button onClick={() => setTheme(isDark ? "light" : "dark")}>
-            {isDark ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
+          <h1 className="text-2xl font-bold">DocGen</h1>
+          <p className={`text-sm mt-1 ${isDark ? "text-gray-500" : "text-gray-500"}`}>AI-powered documentation</p>
         </div>
-      </div>
 
-      <div className={`mt-8 w-full max-w-md p-6 rounded-2xl border ${isDark ? "bg-[#27272a] border-[#3f3f46]" : "bg-white border-gray-200"} h-48 overflow-y-auto custom-scrollbar`}>
-        <h3 className="font-bold text-lg mb-2">How It Works</h3>
-        <p className="text-sm opacity-80 mb-4">
-          DocGen automatically transforms your raw code into structured, professional documentation. It streamlines your workflow by eliminating manual writing.
-        </p>
-        <ul className="text-sm opacity-80 list-disc pl-5 space-y-2">
-           <li>Paste or upload your code file</li>
-           <li>Intelligent AI Analysis breaks down the logic</li>
-           <li>Your documents are securely saved to your account</li>
-           <li>One-Click Export to PDF or DOCX formats</li>
-        </ul>
-      </div>
+        <div className="w-full max-w-sm">
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className={`text-2xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+              {isLogin ? "Welcome back" : "Create your account"}
+            </h2>
+            <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-500"}`}>
+              {isLogin ? "Enter your credentials to access your workspace" : "Get started with DocGen in seconds"}
+            </p>
+          </div>
 
-      <div className="mt-6 text-center text-sm opacity-60">
-        <p>&copy; {new Date().getFullYear()} DocGen. All rights reserved.</p>
-        <p>Support: docgenindia@gmail.com</p>
+          {/* Error / Success messages */}
+          {errorMsg && (
+            <div className={`mb-5 p-3.5 rounded-xl text-sm font-medium flex items-center gap-2 ${isDark ? "bg-red-500/10 border border-red-500/20 text-red-400" : "bg-red-50 border border-red-200 text-red-600"}`}>
+              <X size={14} className="flex-shrink-0" /> {errorMsg}
+            </div>
+          )}
+          {successMsg && (
+            <div className={`mb-5 p-3.5 rounded-xl text-sm font-medium flex items-center gap-2 ${isDark ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border border-emerald-200 text-emerald-600"}`}>
+              <ShieldCheck size={14} className="flex-shrink-0" /> {successMsg}
+            </div>
+          )}
+
+          {/* Form */}
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setErrorMsg(""); setSuccessMsg(""); setLoading(true);
+              const res = await onAuth(isLogin ? "login" : "register", { username: user, password: pass });
+              setLoading(false);
+              if (res && !res.success) {
+                setErrorMsg(res.error);
+              } else if (res && res.message) {
+                setSuccessMsg(res.message);
+                if (!isLogin) { setUser(""); setPass(""); }
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 uppercase tracking-wider ${isDark ? "text-gray-400" : "text-gray-500"}`}>Username</label>
+              <input
+                value={user}
+                onChange={(e) => setUser(e.target.value)}
+                placeholder="Enter your username"
+                className={`w-full px-4 py-3 rounded-xl border outline-none text-sm transition-colors ${isDark ? "bg-white/5 border-white/10 text-white placeholder-gray-600 focus:border-indigo-500/50 focus:bg-white/[0.07]" : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:bg-white"}`}
+                required
+              />
+            </div>
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 uppercase tracking-wider ${isDark ? "text-gray-400" : "text-gray-500"}`}>Password</label>
+              <input
+                type="password"
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
+                placeholder="Enter your password"
+                className={`w-full px-4 py-3 rounded-xl border outline-none text-sm transition-colors ${isDark ? "bg-white/5 border-white/10 text-white placeholder-gray-600 focus:border-indigo-500/50 focus:bg-white/[0.07]" : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:bg-white"}`}
+                required
+              />
+            </div>
+            <button
+              disabled={loading}
+              className={`w-full py-3.5 rounded-xl font-semibold text-sm text-white transition-all ${loading ? "opacity-60 cursor-not-allowed" : ""} ${isDark ? "bg-indigo-600 hover:bg-indigo-500" : "bg-indigo-600 hover:bg-indigo-700"}`}
+            >
+              {loading ? <Loader2 size={18} className="animate-spin mx-auto" /> : (isLogin ? "Sign In" : "Create Account")}
+            </button>
+          </form>
+
+          {/* Switch mode */}
+          <div className="mt-6 text-center">
+            <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-500"}`}>
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              <button
+                onClick={() => { setErrorMsg(""); setSuccessMsg(""); navigate(isLogin ? "/register" : "/login"); }}
+                className={`ml-1.5 font-semibold ${isDark ? "text-indigo-400 hover:text-indigo-300" : "text-indigo-600 hover:text-indigo-700"}`}
+              >
+                {isLogin ? "Sign up" : "Sign in"}
+              </button>
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className={`flex-1 h-px ${isDark ? "bg-white/10" : "bg-gray-200"}`} />
+            <span className={`text-[10px] uppercase tracking-widest font-semibold ${isDark ? "text-gray-600" : "text-gray-400"}`}>or</span>
+            <div className={`flex-1 h-px ${isDark ? "bg-white/10" : "bg-gray-200"}`} />
+          </div>
+
+          {/* Demo + GitHub */}
+          {isLogin && (
+            <button
+              type="button"
+              onClick={() => {
+                setUser("demo");
+                setPass("demouser");
+                onAuth("login", { username: "demo", password: "demouser" });
+              }}
+              className={`w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 border mb-3 transition-colors ${isDark ? "border-white/10 text-gray-300 hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+            >
+              Try Demo Account
+            </button>
+          )}
+          <a
+            href="https://github.com/SanjayMarathi/DocGen"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 border transition-colors ${isDark ? "border-white/10 text-gray-300 hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+          >
+            <Github size={16} /> View on GitHub
+          </a>
+        </div>
+
+        {/* Mobile footer */}
+        <div className="lg:hidden mt-12 text-center">
+          <p className={`text-xs ${isDark ? "text-gray-600" : "text-gray-400"}`}>
+            &copy; {new Date().getFullYear()} DocGen &middot; docgenindia@gmail.com
+          </p>
+        </div>
       </div>
     </div>
   );
