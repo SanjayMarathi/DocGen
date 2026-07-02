@@ -757,207 +757,177 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
   const [loading, setLoading] = useState(false);
   const isDark = theme === "dark";
 
-  const features = [
-    { icon: <FileText size={20} />, title: "Smart Analysis", desc: "AI breaks down your code into clear explanations" },
-    { icon: <ShieldCheck size={20} />, title: "Secure Storage", desc: "Documents saved safely to your personal account" },
-    { icon: <Download size={20} />, title: "Export Anywhere", desc: "One-click PDF and DOCX generation" },
-    { icon: <Globe size={20} />, title: "Always Accessible", desc: "Access your docs from any device, anytime" },
-  ];
+  const [typedCode, setTypedCode] = useState("");
+  const codeToType = `// Welcome to DocGen AI
+// Automating your documentation workflow
+
+async function generateDocs(sourceCode) {
+  const prompt = \`Analyze this code and generate documentation:
+  \${sourceCode}\`;
+  
+  const response = await ai.model('qwen2.5-coder').generate(prompt);
+  
+  return Document.save(response.markdown);
+}
+
+// Ready. Awaiting authentication...`;
+
+  useEffect(() => {
+    let i = 0;
+    const typingInterval = setInterval(() => {
+      if (i < codeToType.length) {
+        setTypedCode(codeToType.slice(0, i + 1));
+        i++;
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 25);
+    return () => clearInterval(typingInterval);
+  }, [codeToType]);
 
   return (
-    <div className={`min-h-screen flex ${isDark ? "bg-[#0a0a0b] text-white" : "bg-[#f0f2f5] text-gray-900"}`}>
-      {/* ── Left Panel: Brand + Features ── */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden flex-col justify-between p-12">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0" style={{
-          background: isDark
-            ? "linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #172554 65%, #0c0a09 100%)"
-            : "linear-gradient(135deg, #dbeafe 0%, #e0e7ff 35%, #c7d2fe 65%, #bfdbfe 100%)",
-        }} />
-        {/* Decorative circles */}
-        <div className={`absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full ${isDark ? "bg-indigo-500/10" : "bg-indigo-400/20"} blur-3xl`} />
-        <div className={`absolute bottom-[-15%] left-[-10%] w-[600px] h-[600px] rounded-full ${isDark ? "bg-blue-500/8" : "bg-blue-300/25"} blur-3xl`} />
-        <div className={`absolute top-[40%] left-[30%] w-[300px] h-[300px] rounded-full ${isDark ? "bg-violet-500/5" : "bg-violet-300/15"} blur-2xl`} />
+    <div 
+      className={`min-h-screen w-full flex flex-col items-center justify-center p-4 relative transition-colors duration-300 ${isDark ? "bg-[#09090b] text-white" : "bg-[#f8fafc] text-slate-900"}`}
+      style={{
+        backgroundImage: isDark 
+          ? 'radial-gradient(circle at 1px 1px, #27272a 1px, transparent 0)' 
+          : 'radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 0)',
+        backgroundSize: '24px 24px'
+      }}
+    >
+      {/* Main Terminal Window */}
+      <div className={`w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col border transition-all duration-300 ${isDark ? "bg-[#18181b] border-[#27272a] shadow-black/50" : "bg-white border-slate-200 shadow-slate-200/80"}`}>
+        
+        {/* Top Window Bar */}
+        <div className={`h-12 flex items-center justify-between px-4 border-b ${isDark ? "bg-[#0f0f11] border-[#27272a]" : "bg-slate-50 border-slate-200"}`}>
+          <div className="flex gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-500 shadow-inner"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-inner"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500 shadow-inner"></div>
+          </div>
+          <div className={`text-xs font-mono font-medium tracking-wider ${isDark ? "text-zinc-500" : "text-slate-400"}`}>
+            docgen-auth-terminal ~ {isLogin ? "login" : "register"}
+          </div>
+          <div>
+             <div className="w-10"></div> 
+          </div>
+        </div>
 
-        {/* Top: Logo */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark ? "bg-white/10" : "bg-indigo-600"}`}>
-              <FileText size={20} className={isDark ? "text-indigo-400" : "text-white"} />
+        {/* Content Area */}
+        <div className="flex flex-col md:flex-row flex-1 min-h-[500px]">
+          
+          {/* Left: Code Terminal Area */}
+          <div className={`hidden md:block flex-1 p-8 font-mono text-sm leading-relaxed relative overflow-hidden ${isDark ? "bg-[#18181b] text-zinc-300" : "bg-[#f1f5f9] text-slate-700"}`}>
+            {/* Absolute Logo/Brand */}
+            <div className={`absolute top-8 right-8 flex items-center gap-2 opacity-30`}>
+              <FileText size={20} />
+              <span className="font-bold font-sans tracking-tight">DocGen</span>
             </div>
-            <span className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-indigo-900"}`}>DocGen</span>
+            
+            <pre className="whitespace-pre-wrap">
+              <code className={isDark ? "text-emerald-400" : "text-blue-600"}>
+                {typedCode}
+              </code>
+              <span className={`animate-pulse inline-block w-2 h-4 ml-1 align-middle ${isDark ? "bg-emerald-400" : "bg-blue-600"}`}></span>
+            </pre>
           </div>
-        </div>
 
-        {/* Center: Headline */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center max-w-lg">
-          <h1 className={`text-5xl font-extrabold leading-tight mb-6 ${isDark ? "text-white" : "text-gray-900"}`}>
-            Turn your code into
-            <span className={`block ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>documentation.</span>
-          </h1>
-          <p className={`text-lg leading-relaxed mb-10 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-            DocGen transforms complex source code into beautifully structured, professional technical documents — instantly and effortlessly.
-          </p>
+          {/* Right: Auth Form */}
+          <div className={`w-full md:w-[420px] p-8 md:p-10 flex flex-col justify-center border-t md:border-t-0 md:border-l relative ${isDark ? "bg-[#0f0f11] border-[#27272a]" : "bg-white border-slate-200"}`}>
+            
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              className={`absolute top-6 right-6 p-2 rounded-lg transition-colors ${isDark ? "bg-white/5 hover:bg-white/10 text-zinc-400" : "bg-slate-100 hover:bg-slate-200 text-slate-500"}`}
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
 
-          {/* Feature grid */}
-          <div className="grid grid-cols-2 gap-4">
-            {features.map((f, i) => (
-              <div key={i} className={`flex items-start gap-3 p-4 rounded-xl ${isDark ? "bg-white/5 border border-white/5" : "bg-white/60 border border-white/80 shadow-sm"}`}>
-                <div className={`mt-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>{f.icon}</div>
-                <div>
-                  <div className={`text-sm font-semibold mb-0.5 ${isDark ? "text-white" : "text-gray-900"}`}>{f.title}</div>
-                  <div className={`text-xs leading-relaxed ${isDark ? "text-gray-500" : "text-gray-500"}`}>{f.desc}</div>
-                </div>
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-2">
+                {isLogin ? "Welcome back" : "Initialize Account"}
+              </h2>
+              <p className={`text-sm ${isDark ? "text-zinc-500" : "text-slate-500"}`}>
+                {isLogin ? "Authenticate to access your workspace." : "Create a new workspace instance."}
+              </p>
+            </div>
+
+            {errorMsg && (
+              <div className={`mb-6 p-3 rounded-lg text-sm font-medium flex items-center gap-2 border ${isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-600"}`}>
+                <X size={16} className="flex-shrink-0" /> {errorMsg}
               </div>
-            ))}
-          </div>
-        </div>
+            )}
+            {successMsg && (
+              <div className={`mb-6 p-3 rounded-lg text-sm font-medium flex items-center gap-2 border ${isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-600"}`}>
+                <ShieldCheck size={16} className="flex-shrink-0" /> {successMsg}
+              </div>
+            )}
 
-        {/* Bottom: Footer */}
-        <div className="relative z-10">
-          <p className={`text-xs ${isDark ? "text-gray-600" : "text-gray-500"}`}>
-            &copy; {new Date().getFullYear()} DocGen &middot; docgenindia@gmail.com
-          </p>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setErrorMsg(""); setSuccessMsg(""); setLoading(true);
+                const res = await onAuth(isLogin ? "login" : "register", { username: user, password: pass });
+                setLoading(false);
+                if (res && !res.success) setErrorMsg(res.error);
+                else if (res && res.message) {
+                  setSuccessMsg(res.message);
+                  if (!isLogin) { setUser(""); setPass(""); }
+                }
+              }}
+              className="space-y-5"
+            >
+              <div>
+                <label className={`block text-xs font-semibold mb-2 uppercase tracking-wider ${isDark ? "text-zinc-500" : "text-slate-500"}`}>Username</label>
+                <input
+                  value={user}
+                  onChange={(e) => setUser(e.target.value)}
+                  placeholder="admin"
+                  className={`w-full px-4 py-3 rounded-lg border outline-none font-mono text-sm transition-all focus:ring-2 ${isDark ? "bg-[#18181b] border-[#27272a] text-white focus:border-emerald-500 focus:ring-emerald-500/20" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500 focus:ring-blue-500/20"}`}
+                  required
+                />
+              </div>
+              <div>
+                <label className={`block text-xs font-semibold mb-2 uppercase tracking-wider ${isDark ? "text-zinc-500" : "text-slate-500"}`}>Password</label>
+                <input
+                  type="password"
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
+                  placeholder="••••••••"
+                  className={`w-full px-4 py-3 rounded-lg border outline-none font-mono text-sm transition-all focus:ring-2 ${isDark ? "bg-[#18181b] border-[#27272a] text-white focus:border-emerald-500 focus:ring-emerald-500/20" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500 focus:ring-blue-500/20"}`}
+                  required
+                />
+              </div>
+              
+              <button
+                disabled={loading}
+                className={`w-full py-3.5 rounded-lg font-semibold text-sm text-white transition-all shadow-sm ${loading ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-md"} ${isDark ? "bg-emerald-600 hover:bg-emerald-500" : "bg-blue-600 hover:bg-blue-700"}`}
+              >
+                {loading ? <Loader2 size={18} className="animate-spin mx-auto" /> : (isLogin ? "Execute Login" : "Initialize Account")}
+              </button>
+            </form>
+
+            <div className="mt-8 pt-6 border-t text-center border-dashed border-zinc-500/30">
+              <p className={`text-sm ${isDark ? "text-zinc-500" : "text-slate-500"}`}>
+                {isLogin ? "New to DocGen?" : "Already initialized?"}
+                <button
+                  onClick={() => { setErrorMsg(""); setSuccessMsg(""); navigate(isLogin ? "/register" : "/login"); }}
+                  className={`ml-2 font-semibold ${isDark ? "text-emerald-400 hover:text-emerald-300" : "text-blue-600 hover:text-blue-700"}`}
+                >
+                  {isLogin ? "Create one" : "Login"}
+                </button>
+              </p>
+            </div>
+            
+          </div>
         </div>
       </div>
-
-      {/* ── Right Panel: Auth Form ── */}
-      <div className={`w-full lg:w-[45%] flex flex-col items-center justify-center px-6 py-12 relative ${isDark ? "bg-[#0a0a0b]" : "bg-white"}`}>
-        {/* Theme toggle */}
-        <button
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          className={`absolute top-6 right-6 p-2.5 rounded-full ${isDark ? "bg-white/5 hover:bg-white/10 text-gray-400" : "bg-gray-100 hover:bg-gray-200 text-gray-600"}`}
-        >
-          {isDark ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-
-        {/* Mobile logo (shown only on small screens) */}
-        <div className="lg:hidden mb-10 text-center">
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 ${isDark ? "bg-indigo-500/20" : "bg-indigo-600"}`}>
-            <FileText size={24} className={isDark ? "text-indigo-400" : "text-white"} />
-          </div>
-          <h1 className="text-2xl font-bold">DocGen</h1>
-          <p className={`text-sm mt-1 ${isDark ? "text-gray-500" : "text-gray-500"}`}>AI-powered documentation</p>
-        </div>
-
-        <div className="w-full max-w-sm">
-          {/* Heading */}
-          <div className="mb-8">
-            <h2 className={`text-2xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-              {isLogin ? "Welcome back" : "Create your account"}
-            </h2>
-            <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-500"}`}>
-              {isLogin ? "Enter your credentials to access your workspace" : "Get started with DocGen in seconds"}
-            </p>
-          </div>
-
-          {/* Error / Success messages */}
-          {errorMsg && (
-            <div className={`mb-5 p-3.5 rounded-xl text-sm font-medium flex items-center gap-2 ${isDark ? "bg-red-500/10 border border-red-500/20 text-red-400" : "bg-red-50 border border-red-200 text-red-600"}`}>
-              <X size={14} className="flex-shrink-0" /> {errorMsg}
-            </div>
-          )}
-          {successMsg && (
-            <div className={`mb-5 p-3.5 rounded-xl text-sm font-medium flex items-center gap-2 ${isDark ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border border-emerald-200 text-emerald-600"}`}>
-              <ShieldCheck size={14} className="flex-shrink-0" /> {successMsg}
-            </div>
-          )}
-
-          {/* Form */}
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setErrorMsg(""); setSuccessMsg(""); setLoading(true);
-              const res = await onAuth(isLogin ? "login" : "register", { username: user, password: pass });
-              setLoading(false);
-              if (res && !res.success) {
-                setErrorMsg(res.error);
-              } else if (res && res.message) {
-                setSuccessMsg(res.message);
-                if (!isLogin) { setUser(""); setPass(""); }
-              }
-            }}
-            className="space-y-4"
-          >
-            <div>
-              <label className={`block text-xs font-semibold mb-1.5 uppercase tracking-wider ${isDark ? "text-gray-400" : "text-gray-500"}`}>Username</label>
-              <input
-                value={user}
-                onChange={(e) => setUser(e.target.value)}
-                placeholder="Enter your username"
-                className={`w-full px-4 py-3 rounded-xl border outline-none text-sm transition-colors ${isDark ? "bg-white/5 border-white/10 text-white placeholder-gray-600 focus:border-indigo-500/50 focus:bg-white/[0.07]" : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:bg-white"}`}
-                required
-              />
-            </div>
-            <div>
-              <label className={`block text-xs font-semibold mb-1.5 uppercase tracking-wider ${isDark ? "text-gray-400" : "text-gray-500"}`}>Password</label>
-              <input
-                type="password"
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-                placeholder="Enter your password"
-                className={`w-full px-4 py-3 rounded-xl border outline-none text-sm transition-colors ${isDark ? "bg-white/5 border-white/10 text-white placeholder-gray-600 focus:border-indigo-500/50 focus:bg-white/[0.07]" : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:bg-white"}`}
-                required
-              />
-            </div>
-            <button
-              disabled={loading}
-              className={`w-full py-3.5 rounded-xl font-semibold text-sm text-white transition-all ${loading ? "opacity-60 cursor-not-allowed" : ""} ${isDark ? "bg-indigo-600 hover:bg-indigo-500" : "bg-indigo-600 hover:bg-indigo-700"}`}
-            >
-              {loading ? <Loader2 size={18} className="animate-spin mx-auto" /> : (isLogin ? "Sign In" : "Create Account")}
-            </button>
-          </form>
-
-          {/* Switch mode */}
-          <div className="mt-6 text-center">
-            <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-500"}`}>
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
-              <button
-                onClick={() => { setErrorMsg(""); setSuccessMsg(""); navigate(isLogin ? "/register" : "/login"); }}
-                className={`ml-1.5 font-semibold ${isDark ? "text-indigo-400 hover:text-indigo-300" : "text-indigo-600 hover:text-indigo-700"}`}
-              >
-                {isLogin ? "Sign up" : "Sign in"}
-              </button>
-            </p>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className={`flex-1 h-px ${isDark ? "bg-white/10" : "bg-gray-200"}`} />
-            <span className={`text-[10px] uppercase tracking-widest font-semibold ${isDark ? "text-gray-600" : "text-gray-400"}`}>or</span>
-            <div className={`flex-1 h-px ${isDark ? "bg-white/10" : "bg-gray-200"}`} />
-          </div>
-
-          {/* Demo + GitHub */}
-          {isLogin && (
-            <button
-              type="button"
-              onClick={() => {
-                setUser("demo");
-                setPass("demouser");
-                onAuth("login", { username: "demo", password: "demouser" });
-              }}
-              className={`w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 border mb-3 transition-colors ${isDark ? "border-white/10 text-gray-300 hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-50"}`}
-            >
-              Try Demo Account
-            </button>
-          )}
-          <a
-            href="https://github.com/SanjayMarathi/DocGen"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 border transition-colors ${isDark ? "border-white/10 text-gray-300 hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-50"}`}
-          >
-            <Github size={16} /> View on GitHub
-          </a>
-        </div>
-
-        {/* Mobile footer */}
-        <div className="lg:hidden mt-12 text-center">
-          <p className={`text-xs ${isDark ? "text-gray-600" : "text-gray-400"}`}>
-            &copy; {new Date().getFullYear()} DocGen &middot; docgenindia@gmail.com
-          </p>
-        </div>
+      
+      {/* Footer text */}
+      <div className={`mt-8 flex gap-4 text-xs font-mono opacity-60 ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
+        <span>&copy; {new Date().getFullYear()} DOCGEN_SYS</span>
+        <span>&middot;</span>
+        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> STATUS: ONLINE</span>
       </div>
     </div>
   );
