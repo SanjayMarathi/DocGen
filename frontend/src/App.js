@@ -92,10 +92,10 @@ export default function App() {
         const dummyRef = await addDoc(collection(db, "documents"), {
           userId: "demo",
           topic: "Welcome to DocGen!",
-          content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation leveraging Qwen2.5-Coder.\n\nEnjoy!",
+          content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation.\n\nEnjoy!",
           created_at: new Date().toISOString()
         });
-        docsData.push({ id: dummyRef.id, topic: "Welcome to DocGen!", content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation leveraging Qwen2.5-Coder.\n\nEnjoy!", created_at: new Date().toISOString() });
+        docsData.push({ id: dummyRef.id, topic: "Welcome to DocGen!", content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation.\n\nEnjoy!", created_at: new Date().toISOString() });
       }
       
       setHistory(docsData);
@@ -676,22 +676,22 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
               <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6">
                 <Code2 size={28} />
               </div>
-              <h3 className="text-xl font-bold mb-3">AI Code Analysis</h3>
-              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Powered by Qwen2.5-Coder, instantly break down complex code blocks into understandable, structured explanations.</p>
+              <h3 className="text-xl font-bold mb-3">Intelligent Code Analysis</h3>
+              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Instantly break down complex code blocks into understandable, structured explanations. Save hours of manual documentation work by letting the engine generate detailed summaries and usage guides from your source code.</p>
             </motion.div>
             <motion.div whileHover={{ y: -10 }} className={`p-8 rounded-3xl border backdrop-blur-sm ${isDark ? "bg-white/5 border-white/5" : "bg-white border-gray-100 shadow-xl shadow-gray-200/50"}`}>
               <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 mb-6">
                 <Database size={28} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Cloud Storage</h3>
-              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Seamlessly integrated with Firebase Firestore. Your documentation history is securely saved and synced across devices.</p>
+              <h3 className="text-xl font-bold mb-3">Secure Cloud Storage</h3>
+              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Your documentation history is securely saved and synced across all your devices in real-time. Never lose track of your work, and instantly access previously generated documents from your personalized dashboard.</p>
             </motion.div>
             <motion.div whileHover={{ y: -10 }} className={`p-8 rounded-3xl border backdrop-blur-sm ${isDark ? "bg-white/5 border-white/5" : "bg-white border-gray-100 shadow-xl shadow-gray-200/50"}`}>
               <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6">
                 <Zap size={28} />
               </div>
               <h3 className="text-xl font-bold mb-3">One-Click Export</h3>
-              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Generate stunning PDF or DOCX files from your markdown instantly, ready to share with your team or clients.</p>
+              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Generate stunning PDF or DOCX files from your markdown instantly. Your outputs are perfectly formatted, deeply structured, and ready to be shared directly with your team, stakeholders, or clients.</p>
             </motion.div>
           </div>
         </div>
