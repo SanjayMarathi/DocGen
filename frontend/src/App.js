@@ -5,11 +5,33 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus, coy } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
-  FileText, Download, Wand2, ChevronDown, ChevronUp, Copy, Trash2,
-  LogOut, Menu, X, StopCircle, Sun, Moon, PlusCircle, Loader2, Settings,
-  Layout, Paperclip, Mail, Github, Code2, Database, Zap, Sparkles, ShieldCheck, Globe
+  vscDarkPlus,
+  coy,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  FileText,
+  Download,
+  Wand2,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Trash2,
+  LogOut,
+  Menu,
+  X,
+  StopCircle,
+  Sun,
+  Moon,
+  PlusCircle,
+  Loader2,
+  Settings,
+  Layout,
+  Paperclip,
+  Mail,
+  Github,
+  Globe,
+  ShieldCheck,
 } from "lucide-react";
 import { db } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc as firestoreDeleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
@@ -24,12 +46,13 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// --- MODELS (7b removed as requested) ---
 const MODELS = [{ id: "qwen2.5-coder:3b", label: "Fast" }];
 
 export default function App() {
   const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [view, setView] = useState("home");
   const [code, setCode] = useState("");
   const [docs, setDocs] = useState("");
@@ -52,7 +75,9 @@ export default function App() {
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        const res = await fetch(`${API_BASE}status/?t=${Date.now()}`, { cache: "no-store" });
+        const res = await fetch(`${API_BASE}status/?t=${Date.now()}`, {
+          cache: "no-store",
+        });
         setConnection(res.ok ? "online" : "offline");
       } catch {
         setConnection("offline");
@@ -61,16 +86,11 @@ export default function App() {
     checkConnection();
     if (token) {
       fetchUser();
+      fetchHistory();
     }
     const interval = setInterval(checkConnection, 10000);
     return () => clearInterval(interval);
   }, [token]);
-
-  useEffect(() => {
-    if (userData.username) {
-      fetchHistory();
-    }
-  }, [userData]);
 
   const fetchUser = async () => {
     try {
@@ -78,30 +98,16 @@ export default function App() {
       setUserData(res.data);
     } catch {}
   };
-
   const fetchHistory = async () => {
     if (!userData.username) return;
     try {
-      const q = query(collection(db, "documents"), where("userId", "==", userData.username));
+      const q = query(
+        collection(db, "documents"), 
+        where("userId", "==", userData.username)
+      );
       const querySnapshot = await getDocs(q);
       const docsData = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       docsData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      
-      // Feature: Seed demo document if history is empty and user is "demo"
-      if (docsData.length === 0 && userData.username === "demo") {
-        try {
-          const dummyRef = await addDoc(collection(db, "documents"), {
-            userId: "demo",
-            topic: "Welcome to DocGen!",
-            content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation leveraging Qwen2.5-Coder.\n\nEnjoy!",
-            created_at: new Date().toISOString()
-          });
-          docsData.push({ id: dummyRef.id, topic: "Welcome to DocGen!", content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation leveraging Qwen2.5-Coder.\n\nEnjoy!", created_at: new Date().toISOString() });
-        } catch (seedErr) {
-          console.error("Failed to seed demo document", seedErr);
-        }
-      }
-      
       setHistory(docsData);
     } catch (e) {
       console.error(e);
@@ -135,7 +141,6 @@ export default function App() {
     setDocs("");
     setCurrentDocId(null);
     setCode("");
-    setUserData({username: ""});
     navigate("/login");
   };
 
@@ -231,10 +236,10 @@ export default function App() {
     setLoading(false);
   };
 
-  const loadDoc = (d) => {
+  const loadDoc = (doc) => {
     if (loading) return;
-    setCurrentDocId(d.id);
-    setDocs(d.content);
+    setCurrentDocId(doc.id);
+    setDocs(doc.content);
     setView("home");
   };
 
@@ -277,13 +282,13 @@ export default function App() {
   };
 
   const isDark = theme === "dark";
-  const bgMain = isDark ? "bg-[#09090b]" : "bg-[#f8fafc]";
-  const bgCard = isDark ? "bg-[#18181b]" : "bg-white";
-  const bgSidebar = isDark ? "bg-[#18181b]" : "bg-[#f1f5f9]";
-  const textMain = isDark ? "text-gray-100" : "text-slate-900";
-  const textSub = isDark ? "text-gray-400" : "text-slate-500";
-  const border = isDark ? "border-[#27272a]" : "border-slate-200";
-  const primaryBtn = "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg transition-all";
+  const bgMain = isDark ? "bg-[#18181b]" : "bg-[#e5e7eb]";
+  const bgCard = isDark ? "bg-[#27272a]" : "bg-white";
+  const bgSidebar = isDark ? "bg-[#1f1f22]" : "bg-[#f3f4f6]";
+  const textMain = isDark ? "text-gray-100" : "text-black";
+  const textSub = isDark ? "text-gray-400" : "text-gray-600";
+  const border = isDark ? "border-[#3f3f46]" : "border-gray-300";
+  const primaryBtn = "bg-slate-700 hover:bg-slate-600 text-white shadow-none";
 
   if (!token) {
     return (
@@ -298,66 +303,88 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={
-        <div className={`flex h-screen w-full overflow-hidden font-sans ${bgMain} ${textMain} transition-colors duration-300`}>
+        <div
+          className={`flex h-screen w-full overflow-hidden font-sans ${bgMain} ${textMain}`}
+        >
           <AnimatePresence>
         {showHistory && (
           <motion.aside
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 320, opacity: 1 }}
+            animate={{ width: 350, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            className={`flex-shrink-0 flex flex-col border-r ${border} ${bgSidebar} ${loading ? "pointer-events-none opacity-60 grayscale" : ""} shadow-xl z-30`}
+            className={`flex-shrink-0 flex flex-col border-r ${border} ${bgSidebar} ${loading ? "pointer-events-none opacity-60 grayscale" : ""}`}
           >
-            <div className={`p-5 border-b ${border} flex justify-between items-center bg-gradient-to-r from-transparent to-black/5 dark:to-white/5`}>
-              <button onClick={() => setView("home")} className="font-extrabold text-xl flex items-center gap-2 hover:text-blue-500 transition-colors">
-                <Sparkles className="text-blue-500" size={20} /> DocGen
+            <div
+              className={`p-4 border-b ${border} flex justify-between items-center`}
+            >
+              <button
+                onClick={() => setView("home")}
+                className="font-bold text-lg hover:opacity-80 transition"
+              >
+                DocGen
               </button>
-              <button onClick={() => setShowHistory(false)} className={`p-2 hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors ${textSub}`}>
-                <X size={18} />
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded"
+              >
+                <X size={20} />
               </button>
             </div>
             <div className="p-4">
-              <button onClick={() => { setDocs(""); setCurrentDocId(null); setView("home"); }} className={`w-full py-3 ${primaryBtn} font-bold rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02]`}>
+              <button
+                onClick={() => {
+                  setDocs("");
+                  setCurrentDocId(null);
+                  setView("home");
+                }}
+                className={`w-full py-3 ${primaryBtn} font-bold rounded-lg flex items-center justify-center gap-2`}
+              >
                 <PlusCircle size={18} /> New Document
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2 custom-scrollbar">
-              <h3 className={`text-xs font-bold uppercase tracking-wider mb-3 ml-1 ${textSub}`}>Your History</h3>
+            <div className="flex-1 overflow-y-auto px-4 space-y-2 custom-scrollbar">
               {history.map((doc) => (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <div
                   key={doc.id}
                   onClick={() => loadDoc(doc)}
-                  className={`p-3 rounded-xl border cursor-pointer transition-all ${currentDocId === doc.id ? `border-blue-500 shadow-md ${isDark ? "bg-blue-900/20" : "bg-blue-50"}` : `border-transparent hover:border-gray-300 dark:hover:border-gray-600 hover:bg-black/5 dark:hover:bg-white/5`}`}
+                  className={`p-3 rounded-lg border cursor-pointer hover:bg-gray-200 dark:hover:bg-white/5 transition ${currentDocId === doc.id ? `border-blue-500 ring-1 ring-blue-500 ${isDark ? "bg-blue-900/20" : "bg-blue-50"}` : `border-transparent`}`}
                 >
-                  <div className="font-semibold text-sm truncate pr-2">
+                  <div className="font-semibold text-sm truncate">
                     {doc.topic || "Untitled Doc"}
                   </div>
-                  <div className={`flex justify-between items-center text-xs mt-2 ${textSub}`}>
-                    <span className="opacity-80">{new Date(doc.created_at).toLocaleDateString()}</span>
-                    <button onClick={(e) => deleteDoc(doc.id, e)} className="hover:text-red-500 p-1 hover:bg-red-500/10 rounded-md transition-colors">
+                  <div
+                    className={`flex justify-between items-center text-xs mt-1 ${textSub}`}
+                  >
+                    <span>{new Date(doc.created_at).toLocaleDateString()}</span>
+                    <button
+                      onClick={(e) => deleteDoc(doc.id, e)}
+                      className="hover:text-red-500"
+                    >
                       <Trash2 size={14} />
                     </button>
                   </div>
-                </motion.div>
+                </div>
               ))}
-              {history.length === 0 && (
-                <div className={`text-center mt-10 text-sm ${textSub} opacity-60`}>No documents yet</div>
-              )}
             </div>
             <div className={`p-4 border-t ${border} ${bgCard}`}>
-              <div onClick={() => setView("profile")} className="flex items-center gap-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 p-2 rounded-xl transition-colors">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-inner">
-                  {userData.username?.[0]?.toUpperCase()}
+              <div
+                onClick={() => setView("profile")}
+                className="flex items-center gap-3 cursor-pointer hover:opacity-80"
+              >
+                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold">
+                  {userData.username[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold truncate">@{userData.username}</div>
-                  <div className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${connection === "online" ? "text-emerald-500" : "text-rose-500"}`}>
-                    <div className={`w-2 h-2 rounded-full ${connection === "online" ? "bg-emerald-500" : "bg-rose-500"}`}></div>
-                    {connection}
+                  <div className="text-sm font-bold truncate">
+                    {userData.username}
+                  </div>
+                  <div
+                    className={`text-[10px] font-bold ${connection === "online" ? "text-green-600" : "text-red-600"}`}
+                  >
+                    {connection.toUpperCase()}
                   </div>
                 </div>
-                <Settings size={18} className={textSub} />
+                <Settings size={16} />
               </div>
             </div>
           </motion.aside>
@@ -365,24 +392,35 @@ export default function App() {
       </AnimatePresence>
 
       <div className="flex-1 flex flex-col min-w-0 h-full relative">
-        <header className={`flex-none h-16 border-b ${border} ${bgCard} flex items-center justify-between px-6 z-20 shadow-sm`}>
-          <div className="flex items-center gap-4">
+        <header
+          className={`flex-none h-14 border-b ${border} ${bgCard} flex items-center justify-between px-4 z-20`}
+        >
+          <div className="flex items-center gap-3">
             {!showHistory && (
-              <button onClick={() => setShowHistory(true)} className={`p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors ${textSub}`}>
+              <button
+                onClick={() => setShowHistory(true)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded"
+              >
                 <Menu size={20} />
               </button>
             )}
-            <h2 className="font-extrabold text-lg tracking-tight capitalize">{view === "home" ? "Workspace" : view}</h2>
+            <h2 className="font-bold text-lg capitalize">{view}</h2>
           </div>
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-4 items-center">
             {["home", "about", "contact"].map((v) => (
-              <button key={v} onClick={() => setView(v)} className={`text-sm font-semibold transition-colors ${view === v ? "text-blue-500" : `${textSub} hover:text-black dark:hover:text-white`}`}>
-                {v === "home" ? "Workspace" : v.charAt(0).toUpperCase() + v.slice(1)}
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`text-sm font-bold ${view === v ? "text-blue-600" : textSub}`}
+              >
+                {v === "home"
+                  ? "Workspace"
+                  : v.charAt(0).toUpperCase() + v.slice(1)}
               </button>
             ))}
-            <div className={`w-px h-5 ${border} border-r`}></div>
-            <button onClick={() => setTheme(isDark ? "light" : "dark")} className={`p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${textSub} hover:text-black dark:hover:text-white`}>
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            <div className="w-px h-4 bg-gray-400"></div>
+            <button onClick={() => setTheme(isDark ? "light" : "dark")}>
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
           </div>
         </header>
@@ -390,54 +428,121 @@ export default function App() {
         <div className="flex-1 flex flex-col overflow-hidden relative">
           {view === "home" && (
             <>
-              <div ref={outputRef} className="flex-1 overflow-y-auto p-4 md:p-10 pb-10 scroll-smooth custom-scrollbar">
+              <div
+                ref={outputRef}
+                className="flex-1 overflow-y-auto p-8 pb-10 scroll-smooth"
+              >
                 {!docs && !loading ? (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto">
-                    <div className="w-24 h-24 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-3xl flex items-center justify-center mb-8 border border-blue-500/20">
-                      <Code2 size={48} className="text-blue-500" />
-                    </div>
-                    <h2 className="text-4xl font-extrabold mb-4 tracking-tight">AI Documentation</h2>
-                    <p className={`text-lg leading-relaxed ${textSub}`}>
-                      Paste your code or upload a file below. Our AI will automatically generate comprehensive, structured documentation for you.
+                  <div className="h-full flex flex-col items-center justify-center opacity-40 text-center">
+                    <Layout size={64} className="mb-6" />
+                    <h2 className="text-3xl font-bold mb-3">
+                      Generate Professional Documentation
+                    </h2>
+                    <p className="max-w-md text-lg leading-relaxed">
+                      Paste your code below, and let DocGen craft comprehensive
+                      documentation for you.
                     </p>
-                  </motion.div>
+                  </div>
                 ) : (
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`max-w-4xl mx-auto ${bgCard} rounded-2xl border ${border} shadow-xl p-8 md:p-12 min-h-[500px]`}>
-                    <div className={`flex flex-wrap justify-end gap-3 pb-6 border-b ${border} mb-8`}>
-                      <button onClick={() => navigator.clipboard.writeText(docs)} className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg transition-colors ${isDark ? "bg-white/5 hover:bg-white/10" : "bg-black/5 hover:bg-black/10"}`}>
+                  <div
+                    className={`max-w-4xl mx-auto ${bgCard} rounded-xl border ${border} shadow-sm p-10 min-h-[500px]`}
+                  >
+                    <div
+                      className={`flex justify-end gap-3 pb-4 border-b ${border} mb-6`}
+                    >
+                      <button
+                        onClick={() => navigator.clipboard.writeText(docs)}
+                        className="flex items-center gap-1 text-xs font-bold hover:text-blue-500"
+                      >
                         <Copy size={14} /> COPY
                       </button>
-                      <button onClick={() => downloadFile("docx")} className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg transition-colors text-blue-600 ${isDark ? "bg-blue-500/10 hover:bg-blue-500/20" : "bg-blue-50 hover:bg-blue-100"}`}>
+                      <button
+                        onClick={() => downloadFile("docx")}
+                        className="flex items-center gap-1 text-xs font-bold hover:text-blue-500"
+                      >
                         <FileText size={14} /> DOCX
                       </button>
-                      <button onClick={() => downloadFile("pdf")} className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg transition-colors text-rose-600 ${isDark ? "bg-rose-500/10 hover:bg-rose-500/20" : "bg-rose-50 hover:bg-rose-100"}`}>
+                      <button
+                        onClick={() => downloadFile("pdf")}
+                        className="flex items-center gap-1 text-xs font-bold hover:text-blue-500"
+                      >
                         <Download size={14} /> PDF
                       </button>
                     </div>
-                    <div className={`prose prose-lg max-w-none ${isDark ? "prose-invert" : "prose-slate"}`}>
+                    <div
+                      className={`prose max-w-none ${isDark ? "prose-invert" : "prose-neutral"}`}
+                    >
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          h1: ({ node, ...props }) => <h1 className="text-4xl font-extrabold mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500" {...props} />,
-                          h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mt-10 mb-4 pb-2 border-b border-opacity-20 border-current" {...props} />,
-                          code({ node, inline, className, children, ...props }) {
-                            const match = /language-(\w+)/.exec(className || "");
+                          ul: ({ node, ...props }) => (
+                            <ul className="list-disc pl-6 mb-4" {...props} />
+                          ),
+                          ol: ({ node, ...props }) => (
+                            <ol className="list-decimal pl-6 mb-4" {...props} />
+                          ),
+                          h1: ({ node, ...props }) => (
+                            <h1
+                              className="text-3xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700"
+                              {...props}
+                            />
+                          ),
+                          h2: ({ node, ...props }) => (
+                            <h2
+                              className="text-2xl font-bold mt-8 mb-4"
+                              {...props}
+                            />
+                          ),
+                          h3: ({ node, ...props }) => (
+                            <h3
+                              className="text-xl font-bold mt-6 mb-3"
+                              {...props}
+                            />
+                          ),
+                          h4: ({ node, ...props }) => (
+                            <h4
+                              className="text-lg font-bold mt-4 mb-2"
+                              {...props}
+                            />
+                          ),
+                          h5: ({ node, ...props }) => (
+                            <h5
+                              className="text-base font-bold mt-3 mb-1 uppercase tracking-wide"
+                              {...props}
+                            />
+                          ),
+                          p: ({ node, ...props }) => (
+                            <p className="mb-4 leading-relaxed" {...props} />
+                          ),
+                          code({
+                            node,
+                            inline,
+                            className,
+                            children,
+                            ...props
+                          }) {
+                            const match = /language-(\w+)/.exec(
+                              className || "",
+                            );
                             return !inline && match ? (
-                              <div className="not-prose my-8 rounded-xl overflow-hidden shadow-2xl border border-gray-700/50">
-                                <div className="bg-[#1e1e1e] px-4 py-2 text-xs font-mono text-gray-400 border-b border-gray-700/50 flex justify-between items-center">
-                                  <span>{match[1]}</span>
-                                  <div className="flex gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
-                                  </div>
-                                </div>
-                                <SyntaxHighlighter style={vscDarkPlus} language={match[1]} PreTag="div" customStyle={{ margin: 0, background: '#1e1e1e', padding: '1.5rem' }} {...props}>
+                              <div className="not-prose my-6 rounded-md overflow-hidden border border-gray-300 dark:border-gray-700">
+                                <SyntaxHighlighter
+                                  style={isDark ? vscDarkPlus : coy}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  customStyle={{ margin: 0 }}
+                                  {...props}
+                                >
                                   {String(children).replace(/\n$/, "")}
                                 </SyntaxHighlighter>
                               </div>
                             ) : (
-                              <code className={`px-1.5 py-0.5 rounded-md font-mono text-sm ${isDark ? "bg-blue-500/20 text-blue-300" : "bg-blue-50 text-blue-600"}`} {...props}>{children}</code>
+                              <code
+                                className={`px-1 py-0.5 rounded font-mono text-sm ${isDark ? "bg-white/10" : "bg-gray-100"}`}
+                                {...props}
+                              >
+                                {children}
+                              </code>
                             );
                           },
                         }}
@@ -445,72 +550,129 @@ export default function App() {
                         {docs}
                       </ReactMarkdown>
                       {loading && (
-                        <div className="flex justify-center mt-12 mb-4">
-                          <Loader2 className="animate-spin text-blue-500" size={32} />
-                        </div>
+                        <Loader2
+                          className="animate-spin mt-4 text-blue-500"
+                          size={24}
+                        />
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 )}
               </div>
 
-              <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={`flex-shrink-0 p-4 border-t ${border} ${bgCard} z-20 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.2)]`}>
-                <div className="max-w-4xl mx-auto flex flex-col gap-3">
-                  <div className="flex justify-between items-center px-1">
+              <div
+                className={`flex-shrink-0 p-4 border-t ${border} ${bgCard} z-20`}
+              >
+                <div className="max-w-4xl mx-auto flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <label className={`text-xs font-bold uppercase tracking-wider ${textSub}`}>AI Model</label>
-                      <select value={model} onChange={(e) => setModel(e.target.value)} className={`text-sm font-bold border ${border} rounded-lg px-3 py-1.5 outline-none cursor-pointer transition-colors ${isDark ? "bg-[#27272a] hover:bg-[#3f3f46]" : "bg-gray-50 hover:bg-gray-100"}`}>
-                        {MODELS.map((m) => (<option key={m.id} value={m.id}>{m.label}</option>))}
+                      <label className="text-xs font-bold uppercase">
+                        Model:
+                      </label>
+                      <select
+                        value={model}
+                        onChange={(e) => setModel(e.target.value)}
+                        className={`text-sm font-semibold border ${border} rounded p-1 outline-none cursor-pointer ${isDark ? "bg-[#18181b] text-white" : "bg-white text-black"}`}
+                      >
+                        {MODELS.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
-                    <button onClick={() => setIsInputMinimized(!isInputMinimized)} className={`p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${textSub}`}>
-                      {isInputMinimized ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    <button
+                      onClick={() => setIsInputMinimized(!isInputMinimized)}
+                      className="opacity-50"
+                    >
+                      {isInputMinimized ? (
+                        <ChevronUp size={20} />
+                      ) : (
+                        <ChevronDown size={20} />
+                      )}
                     </button>
                   </div>
-                  <AnimatePresence>
-                    {!isInputMinimized && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                        <div className={`flex gap-3 p-2 border ${border} rounded-2xl ${isDark ? "bg-[#09090b]" : "bg-gray-50"} shadow-inner`}>
-                          <label className={`p-3 rounded-xl cursor-pointer flex flex-col justify-end transition-colors ${isDark ? "hover:bg-white/5 text-gray-400 hover:text-white" : "hover:bg-black/5 text-gray-500 hover:text-black"}`}>
-                            <Paperclip size={22} />
-                            <input type="file" className="hidden" onChange={handleFileUpload} />
-                          </label>
-                          <textarea value={code} onChange={(e) => setCode(e.target.value)} className={`flex-1 bg-transparent outline-none p-3 resize-none h-36 font-mono text-sm leading-relaxed custom-scrollbar ${textMain}`} placeholder="Paste your source code here..." disabled={loading} />
-                          <div className="flex flex-col justify-end">
-                            {loading ? (
-                              <button onClick={stopGeneration} className="p-4 bg-rose-500/10 text-rose-500 rounded-xl hover:bg-rose-500/20 transition-colors">
-                                <StopCircle size={24} />
-                              </button>
-                            ) : (
-                              <button onClick={generateDocs} disabled={!code.trim()} className={`p-4 ${primaryBtn} rounded-xl disabled:opacity-50 disabled:cursor-not-allowed`}>
-                                <Wand2 size={24} />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {!isInputMinimized && (
+                    <div
+                      className={`flex gap-2 p-2 border ${border} rounded-xl ${isDark ? "bg-[#18181b]" : "bg-gray-50"}`}
+                    >
+                      <label className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded cursor-pointer flex flex-col justify-end">
+                        <Paperclip size={20} />
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                        />
+                      </label>
+                      <textarea
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        className={`flex-1 bg-transparent outline-none p-2 resize-none h-32 font-mono text-sm ${isDark ? "text-white" : "text-black"}`}
+                        placeholder="Paste code..."
+                        disabled={loading}
+                      />
+                      <div className="flex flex-col justify-end">
+                        {loading ? (
+                          <button
+                            onClick={stopGeneration}
+                            className="p-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                          >
+                            <StopCircle size={24} />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={generateDocs}
+                            disabled={!code.trim()}
+                            className={`p-3 ${primaryBtn} rounded-lg`}
+                          >
+                            <Wand2 size={24} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </motion.div>
+              </div>
             </>
           )}
 
           {view === "about" && (
             <div className="p-10 max-w-4xl mx-auto overflow-y-auto">
-              <h1 className="text-4xl font-extrabold mb-6 tracking-tight">About DocGen</h1>
+              <h1 className="text-4xl font-extrabold mb-6 tracking-tight">
+                About DocGen
+              </h1>
               <div className="space-y-8">
-                <p className={`text-xl leading-relaxed ${textSub}`}>DocGen is an AI-powered documentation engine designed to transform source code into professional-grade technical documents.</p>
+                <p className="text-xl leading-relaxed opacity-80">
+                  DocGen is an AI-powered documentation engine designed to
+                  transform source code into professional-grade technical
+                  documents.
+                </p>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className={`p-8 border ${border} rounded-2xl ${bgCard} shadow-sm`}>
-                    <div className="p-4 bg-blue-500/10 rounded-xl w-fit mb-6 text-blue-500"><ShieldCheck size={32} /></div>
-                    <h3 className="font-bold text-2xl mb-3">Privacy & Security</h3>
-                    <p className={`text-base ${textSub}`}>Your code stays yours. We prioritize session security and leverage industry-standard AI processing.</p>
+                  <div
+                    className={`p-6 border ${border} rounded-2xl ${bgCard} shadow-sm`}
+                  >
+                    <div className="p-3 bg-blue-500/10 rounded-lg w-fit mb-4 text-blue-600">
+                      <ShieldCheck size={28} />
+                    </div>
+                    <h3 className="font-bold text-xl mb-2">
+                      Privacy & Security
+                    </h3>
+                    <p className="text-sm opacity-70">
+                      Your code stays yours. We prioritize session security and
+                      leverage industry-standard AI processing.
+                    </p>
                   </div>
-                  <div className={`p-8 border ${border} rounded-2xl ${bgCard} shadow-sm`}>
-                    <div className="p-4 bg-emerald-500/10 rounded-xl w-fit mb-6 text-emerald-500"><Globe size={32} /></div>
-                    <h3 className="font-bold text-2xl mb-3">Format Export</h3>
-                    <p className={`text-base ${textSub}`}>Generate files compatible with GitHub, Jira, and internal wikis instantly.</p>
+                  <div
+                    className={`p-6 border ${border} rounded-2xl ${bgCard} shadow-sm`}
+                  >
+                    <div className="p-3 bg-green-500/10 rounded-lg w-fit mb-4 text-green-600">
+                      <Globe size={28} />
+                    </div>
+                    <h3 className="font-bold text-xl mb-2">Format Export</h3>
+                    <p className="text-sm opacity-70">
+                      Generate files compatible with GitHub, Jira, and internal
+                      wikis instantly.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -519,17 +681,33 @@ export default function App() {
 
           {view === "contact" && (
             <div className="p-10 max-w-4xl mx-auto">
-              <h1 className="text-4xl font-extrabold mb-10 tracking-tight">Contact Support</h1>
+              <h1 className="text-4xl font-extrabold mb-10 tracking-tight">
+                Contact Support
+              </h1>
               <div className="grid md:grid-cols-2 gap-8">
-                <div className={`p-10 border ${border} rounded-3xl ${bgCard} flex flex-col items-center text-center shadow-lg hover:-translate-y-1 transition-transform`}>
-                  <div className="p-5 bg-blue-500/10 rounded-full mb-6"><Mail className="text-blue-500" size={40} /></div>
-                  <h2 className="text-2xl font-bold mb-3">Email Support</h2>
-                  <a href="mailto:support@docgen.com" className="text-blue-500 font-bold text-lg hover:underline">support@docgen.com</a>
+                <div
+                  className={`p-8 border ${border} rounded-2xl ${bgCard} flex flex-col items-center text-center shadow-lg`}
+                >
+                  <Mail className="text-blue-600 mb-6" size={40} />
+                  <h2 className="text-2xl font-bold mb-2">Email Support</h2>
+                  <a
+                    href="mailto:support@docgen.com"
+                    className="text-blue-600 font-bold text-lg hover:underline"
+                  >
+                    support@docgen.com
+                  </a>
                 </div>
-                <div className={`p-10 border ${border} rounded-3xl ${bgCard} flex flex-col items-center text-center shadow-lg hover:-translate-y-1 transition-transform`}>
-                  <div className={`p-5 rounded-full mb-6 ${isDark ? "bg-white/10" : "bg-black/5"}`}><Github size={40} /></div>
-                  <h2 className="text-2xl font-bold mb-3">GitHub</h2>
-                  <a href="https://github.com/SanjayMarathi/DocGen" className="font-bold text-lg hover:underline">github.com/docgen</a>
+                <div
+                  className={`p-8 border ${border} rounded-2xl ${bgCard} flex flex-col items-center text-center shadow-lg`}
+                >
+                  <Github className="mb-6" size={40} />
+                  <h2 className="text-2xl font-bold mb-2">GitHub</h2>
+                  <a
+                    href="https://github.com/SanjayMarathi/DocGen"
+                    className="font-bold text-lg hover:underline"
+                  >
+                    github.com/docgen
+                  </a>
                 </div>
               </div>
             </div>
@@ -537,17 +715,25 @@ export default function App() {
 
           {view === "profile" && (
             <div className="p-10 max-w-2xl mx-auto">
-              <div className={`p-12 border ${border} rounded-[3rem] ${bgCard} text-center shadow-2xl`}>
-                <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 mx-auto flex items-center justify-center text-white text-5xl font-bold mb-8 shadow-inner">
-                  {userData.username?.[0]?.toUpperCase()}
+              <div
+                className={`p-10 border ${border} rounded-[2rem] ${bgCard} text-center shadow-2xl`}
+              >
+                <div className="w-24 h-24 rounded-full bg-blue-600 mx-auto flex items-center justify-center text-white text-4xl font-bold mb-6">
+                  {userData.username[0]}
                 </div>
-                <h1 className="text-4xl font-extrabold mb-3">@{userData.username}</h1>
-                <p className="text-blue-500 font-bold mb-8 uppercase tracking-widest text-sm bg-blue-500/10 w-fit mx-auto px-4 py-1.5 rounded-full">Active Session</p>
-                <div className={`mb-12 text-base ${textSub} max-w-sm mx-auto leading-relaxed`}>
-                  <p>You are securely logged into your personal workspace.</p>
+                <h1 className="text-3xl font-bold mb-2">{userData.username}</h1>
+                <p className="text-zinc-500 font-medium mb-4 uppercase tracking-widest text-xs">
+                  Active Session
+                </p>
+                <div className="mb-10 text-sm opacity-80">
+                  <p>You are securely logged into DocGen.</p>
+                  <p>Click below to safely terminate your session and return to the login screen.</p>
                 </div>
-                <button onClick={logout} className="w-full py-5 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 flex gap-3 items-center justify-center transition-all shadow-lg hover:shadow-rose-500/25">
-                  <LogOut size={22} /> Terminate Session
+                <button
+                  onClick={logout}
+                  className="w-full py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 flex gap-3 items-center justify-center transition-all shadow-lg"
+                >
+                  <LogOut size={20} /> Terminate Session & Logout
                 </button>
               </div>
             </div>
@@ -555,9 +741,9 @@ export default function App() {
         </div>
       </div>
     </div>
-      } />
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
+    } />
+    <Route path="*" element={<Navigate to="/" />} />
+  </Routes>
   );
 }
 
@@ -568,137 +754,128 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
   const [pass, setPass] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [loading, setLoading] = useState(false);
   const isDark = theme === "dark";
 
   return (
-    <div className={`min-h-screen flex flex-col selection:bg-blue-500 selection:text-white ${isDark ? "bg-[#09090b] text-white" : "bg-[#f8fafc] text-black"} overflow-x-hidden transition-colors duration-300`}>
-      {/* Dynamic Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px] mix-blend-screen animate-blob"></div>
-        <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-4000"></div>
-      </div>
-
-      {/* Navbar */}
-      <nav className="relative z-10 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-            <Sparkles size={20} />
-          </div>
-          <span className="text-2xl font-extrabold tracking-tight">DocGen</span>
-        </div>
-        <button onClick={() => setTheme(isDark ? "light" : "dark")} className={`p-3 rounded-full backdrop-blur-md transition-all ${isDark ? "bg-white/10 hover:bg-white/20" : "bg-black/5 hover:bg-black/10"}`}>
-          {isDark ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
-      </nav>
-
-      {/* Hero Section */}
-      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto w-full px-6 py-12 gap-16">
-        
-        {/* Left: Hero Copy */}
-        <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="flex-1 text-center lg:text-left">
-          <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-            Document code <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500">at lightning speed.</span>
-          </h1>
-          <p className={`text-xl mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-            Transform your raw source code into beautiful, structured, and professional technical documentation instantly. 
-          </p>
-          <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-            <a href="#features" className={`px-8 py-4 rounded-xl font-bold transition-all flex items-center gap-2 ${isDark ? "bg-white/5 hover:bg-white/10 border border-white/10" : "bg-black/5 hover:bg-black/10 border border-black/10"}`}>
-              Explore Features <ChevronDown size={18} />
-            </a>
-          </div>
-        </motion.div>
-
-        {/* Right: Glassmorphism Auth Box */}
-        <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="w-full max-w-md">
-          <div className={`p-10 rounded-[2.5rem] shadow-2xl backdrop-blur-xl border ${isDark ? "bg-white/5 border-white/10 shadow-black/50" : "bg-white/60 border-white shadow-blue-500/10"}`}>
-            <h2 className="text-3xl font-extrabold mb-2">{isLogin ? "Welcome Back" : "Create Account"}</h2>
-            <p className={`mb-8 font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-              {isLogin ? "Sign in to access your workspaces." : "Sign up to start documenting code."}
-            </p>
-            
-            {errorMsg && <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 font-bold rounded-xl text-sm">{errorMsg}</div>}
-            {successMsg && <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold rounded-xl text-sm">{successMsg}</div>}
-
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              setErrorMsg(""); setSuccessMsg(""); setLoading(true);
-              const res = await onAuth(isLogin ? "login" : "register", { username: user, password: pass });
-              setLoading(false);
-              if (res && !res.success) setErrorMsg(res.error);
-              else if (res && res.message) { setSuccessMsg(res.message); if (!isLogin) { setUser(""); setPass(""); } }
-            }} className="space-y-5">
-              <div>
-                <input value={user} onChange={(e) => setUser(e.target.value)} placeholder="Username" required
-                  className={`w-full p-4 rounded-xl outline-none font-medium transition-all ${isDark ? "bg-black/20 focus:bg-black/40 placeholder-gray-500" : "bg-white focus:shadow-md placeholder-gray-400"} border border-transparent focus:border-blue-500`} />
-              </div>
-              <div>
-                <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="Password" required
-                  className={`w-full p-4 rounded-xl outline-none font-medium transition-all ${isDark ? "bg-black/20 focus:bg-black/40 placeholder-gray-500" : "bg-white focus:shadow-md placeholder-gray-400"} border border-transparent focus:border-blue-500`} />
-              </div>
-              <button disabled={loading} className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
-                {loading ? <Loader2 className="animate-spin" size={20} /> : (isLogin ? "Sign In" : "Sign Up")}
-              </button>
-            </form>
-
-            {isLogin && (
-              <div className="mt-6">
-                <div className="relative flex items-center py-5">
-                  <div className="flex-grow border-t border-gray-500/30"></div>
-                  <span className={`flex-shrink-0 mx-4 text-xs font-bold uppercase tracking-wider ${isDark ? "text-gray-500" : "text-gray-400"}`}>Or try it out</span>
-                  <div className="flex-grow border-t border-gray-500/30"></div>
-                </div>
-                <button onClick={async () => {
-                  setErrorMsg(""); setLoading(true);
-                  const res = await onAuth("login", { username: "demo", password: "demouser" });
-                  setLoading(false);
-                  if (res && !res.success) setErrorMsg(res.error);
-                }} disabled={loading} className={`w-full py-4 font-bold rounded-xl flex justify-center items-center gap-2 transition-all hover:scale-[1.02] border ${isDark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-white hover:bg-gray-50 border-gray-200 text-black shadow-sm"}`}>
-                  Demo Login
-                </button>
-              </div>
-            )}
-
-            <div className="mt-8 text-center">
-              <button onClick={() => { setErrorMsg(""); setSuccessMsg(""); navigate(isLogin ? "/register" : "/login"); }} className="text-sm font-bold text-blue-500 hover:text-blue-400 transition-colors">
-                {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Feature Cards Section */}
-      <div id="features" className={`relative z-10 w-full border-y py-20 ${isDark ? "bg-black/20 border-white/5" : "bg-white/50 border-gray-200"}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold mb-4">Why use DocGen?</h2>
-            <p className={`text-lg max-w-2xl mx-auto ${isDark ? "text-gray-400" : "text-gray-600"}`}>Everything you need to automate your documentation workflow in one sleek interface.</p>
-          </div>
-          <div className="flex justify-center">
-            <motion.div whileHover={{ y: -5 }} className={`p-10 md:p-12 w-full max-w-4xl rounded-3xl border backdrop-blur-sm text-left ${isDark ? "bg-white/5 border-white/5" : "bg-white border-gray-100 shadow-xl shadow-gray-200/50"}`}>
-              <h3 className="text-2xl font-bold mb-6">Project Overview</h3>
-              <p className={`text-lg leading-relaxed mb-6 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                DocGen is an advanced, automated documentation engine designed to streamline the software development lifecycle. By seamlessly transforming complex, raw source code into beautifully structured, professional technical documents, it eliminates the tedious manual effort traditionally required to maintain up-to-date documentation.
-              </p>
-              <p className={`text-lg leading-relaxed ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Features include intelligent code analysis that breaks down logic into understandable explanations, a secure cloud storage system that effortlessly syncs your history across all your devices, and a one-click export capability that generates pristine PDF or DOCX files ready for immediate sharing with your team or clients. With a developer-first interface featuring instant generation, dark mode, and strict privacy controls, DocGen ensures you spend less time writing manuals and more time building great software.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="relative z-10 w-full py-10 text-center">
-        <p className={`text-sm font-medium ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-          &copy; {new Date().getFullYear()} DocGen. All rights reserved.<br/>
-          Support: docgenindia@gmail.com
+    <div
+      className={`min-h-screen flex flex-col items-center justify-center p-4 ${isDark ? "bg-[#18181b] text-white" : "bg-[#f9fafb] text-black"}`}
+    >
+      <div className="text-center mb-6 max-w-2xl">
+        <h2 className="text-xl font-medium opacity-80 mb-2">Welcome to</h2>
+        <h1 className="text-5xl font-bold mb-4">DocGen</h1>
+        <p className="text-lg opacity-80 leading-relaxed text-left">
+          DocGen is an advanced, automated documentation engine designed to streamline the software development lifecycle. By seamlessly transforming complex, raw source code into beautifully structured, professional technical documents, it eliminates the tedious manual effort traditionally required to maintain up-to-date documentation.
         </p>
-      </footer>
+      </div>
+      <div
+        className={`w-full max-w-md p-8 rounded-2xl shadow-sm border ${isDark ? "bg-[#27272a] border-[#3f3f46]" : "bg-white border-gray-200"}`}
+      >
+        <div className="text-center mb-6">
+          <p className="text-sm font-semibold opacity-70">
+            {isLogin ? "Login to access your workspace" : "Register a new account"}
+          </p>
+        </div>
+        
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg text-sm text-center">
+            {errorMsg}
+          </div>
+        )}
+        {successMsg && (
+          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/50 text-green-500 rounded-lg text-sm text-center">
+            {successMsg}
+          </div>
+        )}
+
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setErrorMsg("");
+            setSuccessMsg("");
+            const res = await onAuth(isLogin ? "login" : "register", {
+              username: user,
+              password: pass,
+            });
+            if (res && !res.success) {
+              setErrorMsg(res.error);
+            } else if (res && res.message) {
+              setSuccessMsg(res.message);
+              if (!isLogin) {
+                setUser("");
+                setPass("");
+              }
+            }
+          }}
+          className="space-y-4"
+        >
+          <input
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
+            placeholder="Username"
+            className={`w-full p-3 rounded-lg border outline-none ${isDark ? "bg-[#18181b] border-[#3f3f46]" : "bg-white"}`}
+            required
+          />
+          <input
+            type="password"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            placeholder="Password"
+            className={`w-full p-3 rounded-lg border outline-none ${isDark ? "bg-[#18181b] border-[#3f3f46]" : "bg-white"}`}
+            required
+          />
+          <div className="flex gap-2">
+            <button className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg">
+              {isLogin ? "Login" : "Register"}
+            </button>
+            {isLogin && (
+              <button 
+                type="button" 
+                onClick={() => {
+                  setUser("demo");
+                  setPass("demouser");
+                  onAuth("login", { username: "demo", password: "demouser" });
+                }}
+                className={`flex-1 py-3 font-semibold rounded-lg border ${isDark ? "border-[#3f3f46] hover:bg-[#3f3f46]" : "border-gray-300 hover:bg-gray-100"}`}
+              >
+                Demo Login
+              </button>
+            )}
+          </div>
+        </form>
+        <div className="mt-6 flex flex-col items-center gap-4">
+          <button
+            onClick={() => {
+              setErrorMsg("");
+              setSuccessMsg("");
+              navigate(isLogin ? "/register" : "/login");
+            }}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            {isLogin ? "Register instead" : "Login instead"}
+          </button>
+          <button onClick={() => setTheme(isDark ? "light" : "dark")}>
+            {isDark ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+        </div>
+      </div>
+
+      <div className={`mt-8 w-full max-w-md p-6 rounded-2xl border ${isDark ? "bg-[#27272a] border-[#3f3f46]" : "bg-white border-gray-200"} h-48 overflow-y-auto custom-scrollbar`}>
+        <h3 className="font-bold text-lg mb-2">How It Works</h3>
+        <p className="text-sm opacity-80 mb-4">
+          DocGen automatically transforms your raw code into structured, professional documentation. It streamlines your workflow by eliminating manual writing.
+        </p>
+        <ul className="text-sm opacity-80 list-disc pl-5 space-y-2">
+           <li>Paste or upload your code file</li>
+           <li>Intelligent AI Analysis breaks down the logic</li>
+           <li>Your documents are securely saved to your account</li>
+           <li>One-Click Export to PDF or DOCX formats</li>
+        </ul>
+      </div>
+
+      <div className="mt-6 text-center text-sm opacity-60">
+        <p>&copy; {new Date().getFullYear()} DocGen. All rights reserved.</p>
+        <p>Support: docgenindia@gmail.com</p>
+      </div>
     </div>
   );
 };
