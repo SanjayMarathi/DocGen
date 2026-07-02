@@ -89,11 +89,10 @@ function AppContent() {
     } catch {}
   };
 
-  const handleAuth = async (username, password, isRegister, email = "") => {
+  const handleAuth = async (username, password, isRegister) => {
     try {
       const endpoint = isRegister ? "register/" : "login/";
-      const payload = isRegister ? { username, email, password } : { username, password };
-      const res = await axios.post(`${API_BASE}${endpoint}`, payload);
+      const res = await axios.post(`${API_BASE}${endpoint}`, { username, password });
       
       if (isRegister) {
         alert("Account created! Please Sign In.");

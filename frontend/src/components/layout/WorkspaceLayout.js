@@ -22,7 +22,7 @@ export default function WorkspaceLayout({
   const isDark = theme === "dark";
 
   return (
-    <div className={`flex h-screen w-full overflow-hidden font-sans ${isDark ? "bg-[#111111] text-gray-100" : "bg-white text-[#111111]"} transition-colors duration-300 relative`}>
+    <div className={`flex h-screen w-full overflow-hidden font-sans ${isDark ? "bg-[#111111] text-gray-100" : "bg-white text-[#111111]"} transition-colors duration-300`}>
       <AnimatePresence>
         {showHistory && (
           <Sidebar

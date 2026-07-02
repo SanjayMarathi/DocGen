@@ -1,9 +1,0 @@
-node_modules/
-backend/venv/
-backend/db.sqlite3
-__pycache__/
-*.pyc
-frontend/build/
-.git/
-.vscode/
-.idea/

@@ -1,9 +1,0 @@
-django
-djangorestframework
-djangorestframework-simplejwt
-django-cors-headers
-requests
-reportlab
-python-docx
-wikipedia
-whitenoise
