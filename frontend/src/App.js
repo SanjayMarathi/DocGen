@@ -757,177 +757,136 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
   const [loading, setLoading] = useState(false);
   const isDark = theme === "dark";
 
-  const [typedCode, setTypedCode] = useState("");
-  const codeToType = `// Welcome to DocGen AI
-// Automating your documentation workflow
-
-async function generateDocs(sourceCode) {
-  const prompt = \`Analyze this code and generate documentation:
-  \${sourceCode}\`;
-  
-  const response = await ai.model('qwen2.5-coder').generate(prompt);
-  
-  return Document.save(response.markdown);
-}
-
-// Ready. Awaiting authentication...`;
-
-  useEffect(() => {
-    let i = 0;
-    const typingInterval = setInterval(() => {
-      if (i < codeToType.length) {
-        setTypedCode(codeToType.slice(0, i + 1));
-        i++;
-      } else {
-        clearInterval(typingInterval);
-      }
-    }, 25);
-    return () => clearInterval(typingInterval);
-  }, [codeToType]);
-
   return (
-    <div 
-      className={`min-h-screen w-full flex flex-col items-center justify-center p-4 relative transition-colors duration-300 ${isDark ? "bg-[#09090b] text-white" : "bg-[#f8fafc] text-slate-900"}`}
-      style={{
-        backgroundImage: isDark 
-          ? 'radial-gradient(circle at 1px 1px, #27272a 1px, transparent 0)' 
-          : 'radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 0)',
-        backgroundSize: '24px 24px'
-      }}
-    >
-      {/* Main Terminal Window */}
-      <div className={`w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col border transition-all duration-300 ${isDark ? "bg-[#18181b] border-[#27272a] shadow-black/50" : "bg-white border-slate-200 shadow-slate-200/80"}`}>
+    <div className={`min-h-screen w-full flex flex-col md:flex-row transition-colors duration-200 ${isDark ? "bg-[#050505] text-white" : "bg-[#FDFDFD] text-black"}`}>
+      
+      {/* LEFT PANEL - Brutalist/Editorial */}
+      <div className={`w-full md:w-[60%] flex flex-col justify-between p-8 md:p-16 border-b-4 md:border-b-0 md:border-r-4 ${isDark ? "border-white" : "border-black"}`}>
         
-        {/* Top Window Bar */}
-        <div className={`h-12 flex items-center justify-between px-4 border-b ${isDark ? "bg-[#0f0f11] border-[#27272a]" : "bg-slate-50 border-slate-200"}`}>
-          <div className="flex gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500 shadow-inner"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-inner"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500 shadow-inner"></div>
+        {/* Top Header */}
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 flex items-center justify-center border-4 ${isDark ? "border-white bg-white text-black" : "border-black bg-black text-white"}`}>
+            <FileText size={24} strokeWidth={3} />
           </div>
-          <div className={`text-xs font-mono font-medium tracking-wider ${isDark ? "text-zinc-500" : "text-slate-400"}`}>
-            docgen-auth-terminal ~ {isLogin ? "login" : "register"}
-          </div>
-          <div>
-             <div className="w-10"></div> 
-          </div>
+          <span className="text-3xl font-black uppercase tracking-tighter">DOCGEN</span>
         </div>
 
-        {/* Content Area */}
-        <div className="flex flex-col md:flex-row flex-1 min-h-[500px]">
+        {/* Massive Typography */}
+        <div className="my-12 md:my-0">
+          <h1 className="text-6xl md:text-[7rem] font-black uppercase leading-[0.85] tracking-tighter mb-8">
+            GENERATE<br/>
+            DOCS.<br/>
+            <span className={`${isDark ? "text-neutral-600" : "text-neutral-400"}`}>NO BS.</span>
+          </h1>
           
-          {/* Left: Code Terminal Area */}
-          <div className={`hidden md:block flex-1 p-8 font-mono text-sm leading-relaxed relative overflow-hidden ${isDark ? "bg-[#18181b] text-zinc-300" : "bg-[#f1f5f9] text-slate-700"}`}>
-            {/* Absolute Logo/Brand */}
-            <div className={`absolute top-8 right-8 flex items-center gap-2 opacity-30`}>
-              <FileText size={20} />
-              <span className="font-bold font-sans tracking-tight">DocGen</span>
-            </div>
-            
-            <pre className="whitespace-pre-wrap">
-              <code className={isDark ? "text-emerald-400" : "text-blue-600"}>
-                {typedCode}
-              </code>
-              <span className={`animate-pulse inline-block w-2 h-4 ml-1 align-middle ${isDark ? "bg-emerald-400" : "bg-blue-600"}`}></span>
-            </pre>
-          </div>
+          {/* Abstract Geometric Shape */}
+          <div className={`w-24 h-24 md:w-32 md:h-32 border-8 transition-transform duration-1000 hover:rotate-90 ${isDark ? "border-white bg-transparent" : "border-black bg-transparent"}`}></div>
+        </div>
 
-          {/* Right: Auth Form */}
-          <div className={`w-full md:w-[420px] p-8 md:p-10 flex flex-col justify-center border-t md:border-t-0 md:border-l relative ${isDark ? "bg-[#0f0f11] border-[#27272a]" : "bg-white border-slate-200"}`}>
-            
-            {/* Theme Toggle */}
-            <button
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className={`absolute top-6 right-6 p-2 rounded-lg transition-colors ${isDark ? "bg-white/5 hover:bg-white/10 text-zinc-400" : "bg-slate-100 hover:bg-slate-200 text-slate-500"}`}
-            >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-2">
-                {isLogin ? "Welcome back" : "Initialize Account"}
-              </h2>
-              <p className={`text-sm ${isDark ? "text-zinc-500" : "text-slate-500"}`}>
-                {isLogin ? "Authenticate to access your workspace." : "Create a new workspace instance."}
-              </p>
-            </div>
-
-            {errorMsg && (
-              <div className={`mb-6 p-3 rounded-lg text-sm font-medium flex items-center gap-2 border ${isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-600"}`}>
-                <X size={16} className="flex-shrink-0" /> {errorMsg}
-              </div>
-            )}
-            {successMsg && (
-              <div className={`mb-6 p-3 rounded-lg text-sm font-medium flex items-center gap-2 border ${isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-600"}`}>
-                <ShieldCheck size={16} className="flex-shrink-0" /> {successMsg}
-              </div>
-            )}
-
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setErrorMsg(""); setSuccessMsg(""); setLoading(true);
-                const res = await onAuth(isLogin ? "login" : "register", { username: user, password: pass });
-                setLoading(false);
-                if (res && !res.success) setErrorMsg(res.error);
-                else if (res && res.message) {
-                  setSuccessMsg(res.message);
-                  if (!isLogin) { setUser(""); setPass(""); }
-                }
-              }}
-              className="space-y-5"
-            >
-              <div>
-                <label className={`block text-xs font-semibold mb-2 uppercase tracking-wider ${isDark ? "text-zinc-500" : "text-slate-500"}`}>Username</label>
-                <input
-                  value={user}
-                  onChange={(e) => setUser(e.target.value)}
-                  placeholder="admin"
-                  className={`w-full px-4 py-3 rounded-lg border outline-none font-mono text-sm transition-all focus:ring-2 ${isDark ? "bg-[#18181b] border-[#27272a] text-white focus:border-emerald-500 focus:ring-emerald-500/20" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500 focus:ring-blue-500/20"}`}
-                  required
-                />
-              </div>
-              <div>
-                <label className={`block text-xs font-semibold mb-2 uppercase tracking-wider ${isDark ? "text-zinc-500" : "text-slate-500"}`}>Password</label>
-                <input
-                  type="password"
-                  value={pass}
-                  onChange={(e) => setPass(e.target.value)}
-                  placeholder="••••••••"
-                  className={`w-full px-4 py-3 rounded-lg border outline-none font-mono text-sm transition-all focus:ring-2 ${isDark ? "bg-[#18181b] border-[#27272a] text-white focus:border-emerald-500 focus:ring-emerald-500/20" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500 focus:ring-blue-500/20"}`}
-                  required
-                />
-              </div>
-              
-              <button
-                disabled={loading}
-                className={`w-full py-3.5 rounded-lg font-semibold text-sm text-white transition-all shadow-sm ${loading ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-md"} ${isDark ? "bg-emerald-600 hover:bg-emerald-500" : "bg-blue-600 hover:bg-blue-700"}`}
-              >
-                {loading ? <Loader2 size={18} className="animate-spin mx-auto" /> : (isLogin ? "Execute Login" : "Initialize Account")}
-              </button>
-            </form>
-
-            <div className="mt-8 pt-6 border-t text-center border-dashed border-zinc-500/30">
-              <p className={`text-sm ${isDark ? "text-zinc-500" : "text-slate-500"}`}>
-                {isLogin ? "New to DocGen?" : "Already initialized?"}
-                <button
-                  onClick={() => { setErrorMsg(""); setSuccessMsg(""); navigate(isLogin ? "/register" : "/login"); }}
-                  className={`ml-2 font-semibold ${isDark ? "text-emerald-400 hover:text-emerald-300" : "text-blue-600 hover:text-blue-700"}`}
-                >
-                  {isLogin ? "Create one" : "Login"}
-                </button>
-              </p>
-            </div>
-            
-          </div>
+        {/* Brutalist Footer */}
+        <div className="font-mono text-xs md:text-sm font-bold uppercase tracking-widest flex flex-col gap-2">
+          <span>// AI-POWERED DOCUMENTATION ENGINE</span>
+          <span>// STATUS: ONLINE</span>
+          <span>// THEME: {isDark ? "DARK" : "LIGHT"} MODE</span>
         </div>
       </div>
-      
-      {/* Footer text */}
-      <div className={`mt-8 flex gap-4 text-xs font-mono opacity-60 ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
-        <span>&copy; {new Date().getFullYear()} DOCGEN_SYS</span>
-        <span>&middot;</span>
-        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> STATUS: ONLINE</span>
+
+      {/* RIGHT PANEL - Stark Auth Form */}
+      <div className={`w-full md:w-[40%] flex flex-col justify-center p-8 md:p-16 relative ${isDark ? "bg-[#050505]" : "bg-white"}`}>
+        
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          className={`absolute top-6 right-6 w-12 h-12 flex items-center justify-center border-4 transition-colors ${isDark ? "border-white hover:bg-white hover:text-black" : "border-black hover:bg-black hover:text-white"}`}
+        >
+          {isDark ? <Sun size={20} strokeWidth={3} /> : <Moon size={20} strokeWidth={3} />}
+        </button>
+
+        <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-2 mt-8 md:mt-0">
+          {isLogin ? "LOGIN" : "REGISTER"}
+        </h2>
+        <p className="font-mono text-sm font-bold mb-10 uppercase opacity-70">
+          {isLogin ? "Authenticate to proceed" : "Initialize new profile"}
+        </p>
+
+        {errorMsg && (
+          <div className={`mb-8 p-4 border-4 font-mono font-bold text-sm ${isDark ? "border-red-500 text-red-500" : "border-red-600 text-red-600"}`}>
+            [ERROR] {errorMsg}
+          </div>
+        )}
+        {successMsg && (
+          <div className={`mb-8 p-4 border-4 font-mono font-bold text-sm ${isDark ? "border-green-500 text-green-500" : "border-green-600 text-green-600"}`}>
+            [SUCCESS] {successMsg}
+          </div>
+        )}
+
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setErrorMsg(""); setSuccessMsg(""); setLoading(true);
+            const res = await onAuth(isLogin ? "login" : "register", { username: user, password: pass });
+            setLoading(false);
+            if (res && !res.success) setErrorMsg(res.error);
+            else if (res && res.message) {
+              setSuccessMsg(res.message);
+              if (!isLogin) { setUser(""); setPass(""); }
+            }
+          }}
+          className="space-y-6"
+        >
+          <div>
+            <label className="block font-mono text-sm font-bold uppercase mb-2">Username</label>
+            <input
+              value={user}
+              onChange={(e) => setUser(e.target.value)}
+              className={`w-full p-4 border-4 outline-none font-mono font-bold text-lg transition-colors ${isDark ? "bg-transparent border-white text-white focus:bg-white focus:text-black placeholder-neutral-600" : "bg-transparent border-black text-black focus:bg-black focus:text-white placeholder-neutral-400"}`}
+              placeholder="USERNAME"
+              required
+            />
+          </div>
+          <div>
+            <label className="block font-mono text-sm font-bold uppercase mb-2">Password</label>
+            <input
+              type="password"
+              value={pass}
+              onChange={(e) => setPass(e.target.value)}
+              className={`w-full p-4 border-4 outline-none font-mono font-bold text-lg transition-colors ${isDark ? "bg-transparent border-white text-white focus:bg-white focus:text-black placeholder-neutral-600" : "bg-transparent border-black text-black focus:bg-black focus:text-white placeholder-neutral-400"}`}
+              placeholder="********"
+              required
+            />
+          </div>
+          
+          <button
+            disabled={loading}
+            className={`w-full p-5 border-4 font-black text-xl uppercase tracking-widest transition-transform ${loading ? "opacity-50" : "hover:-translate-y-1 hover:translate-x-1"} ${isDark ? "bg-white border-white text-black" : "bg-black border-black text-white"}`}
+          >
+            {loading ? <Loader2 size={24} className="animate-spin mx-auto" /> : (isLogin ? "ENTER" : "CREATE")}
+          </button>
+        </form>
+
+        <div className="mt-8 flex flex-col gap-4">
+          {isLogin && (
+            <button
+              type="button"
+              onClick={() => {
+                setUser("demo");
+                setPass("demouser");
+                onAuth("login", { username: "demo", password: "demouser" });
+              }}
+              className={`w-full p-4 border-4 font-black text-lg uppercase tracking-wider transition-colors ${isDark ? "border-white text-white hover:bg-white hover:text-black" : "border-black text-black hover:bg-black hover:text-white"}`}
+            >
+              TRY DEMO ACCOUNT
+            </button>
+          )}
+
+          <button
+            onClick={() => { setErrorMsg(""); setSuccessMsg(""); navigate(isLogin ? "/register" : "/login"); }}
+            className="font-mono font-bold text-sm underline uppercase mt-4 text-center hover:opacity-70 transition-opacity"
+          >
+            {isLogin ? "OR CREATE NEW ACCOUNT" : "OR LOGIN TO EXISTING"}
+          </button>
+        </div>
+        
       </div>
     </div>
   );
