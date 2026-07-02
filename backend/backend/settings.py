@@ -31,6 +31,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
 
@@ -44,10 +45,12 @@ ROOT_URLCONF = 'backend.urls'
 
 
 # ---------------- TEMPLATES ----------------
+import os
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, '../frontend/build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -88,7 +91,12 @@ USE_TZ = True
 
 
 # ---------------- STATIC ----------------
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, '../frontend/build/static'),
+]
+WHITENOISE_ROOT = os.path.join(BASE_DIR, '../frontend/build')
 
 
 # =====================================================
@@ -96,12 +104,12 @@ STATIC_URL = 'static/'
 # =====================================================
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+# ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
