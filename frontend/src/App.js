@@ -89,13 +89,17 @@ export default function App() {
       
       // Feature: Seed demo document if history is empty and user is "demo"
       if (docsData.length === 0 && userData.username === "demo") {
-        const dummyRef = await addDoc(collection(db, "documents"), {
-          userId: "demo",
-          topic: "Welcome to DocGen!",
-          content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation.\n\nEnjoy!",
-          created_at: new Date().toISOString()
-        });
-        docsData.push({ id: dummyRef.id, topic: "Welcome to DocGen!", content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation.\n\nEnjoy!", created_at: new Date().toISOString() });
+        try {
+          const dummyRef = await addDoc(collection(db, "documents"), {
+            userId: "demo",
+            topic: "Welcome to DocGen!",
+            content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation leveraging Qwen2.5-Coder.\n\nEnjoy!",
+            created_at: new Date().toISOString()
+          });
+          docsData.push({ id: dummyRef.id, topic: "Welcome to DocGen!", content: "### Hello and Welcome!\n\nThis is a sample document seeded automatically for the demo account.\n\nYou can upload or paste your code below and click the magical wand button to generate robust technical documentation leveraging Qwen2.5-Coder.\n\nEnjoy!", created_at: new Date().toISOString() });
+        } catch (seedErr) {
+          console.error("Failed to seed demo document", seedErr);
+        }
       }
       
       setHistory(docsData);
@@ -171,6 +175,12 @@ export default function App() {
         body: JSON.stringify({ code, model }),
         signal: controller.signal,
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        setDocs(`### Generation Error\nThe server returned an error (${response.status}).\n\n${errorText}`);
+        return;
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
@@ -588,15 +598,12 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
         
         {/* Left: Hero Copy */}
         <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="flex-1 text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-500 font-bold text-sm mb-6">
-            <Sparkles size={16} /> V2.0 Now Available
-          </div>
           <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
             Document code <br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500">at lightning speed.</span>
           </h1>
           <p className={`text-xl mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-            Transform your raw source code into beautiful, structured, and professional technical documentation using the power of Qwen2.5-Coder.
+            Transform your raw source code into beautiful, structured, and professional technical documentation instantly. 
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
             <a href="#features" className={`px-8 py-4 rounded-xl font-bold transition-all flex items-center gap-2 ${isDark ? "bg-white/5 hover:bg-white/10 border border-white/10" : "bg-black/5 hover:bg-black/10 border border-black/10"}`}>
@@ -671,27 +678,15 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
             <h2 className="text-3xl font-extrabold mb-4">Why use DocGen?</h2>
             <p className={`text-lg max-w-2xl mx-auto ${isDark ? "text-gray-400" : "text-gray-600"}`}>Everything you need to automate your documentation workflow in one sleek interface.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div whileHover={{ y: -10 }} className={`p-8 rounded-3xl border backdrop-blur-sm ${isDark ? "bg-white/5 border-white/5" : "bg-white border-gray-100 shadow-xl shadow-gray-200/50"}`}>
-              <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6">
-                <Code2 size={28} />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Intelligent Code Analysis</h3>
-              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Instantly break down complex code blocks into understandable, structured explanations. Save hours of manual documentation work by letting the engine generate detailed summaries and usage guides from your source code.</p>
-            </motion.div>
-            <motion.div whileHover={{ y: -10 }} className={`p-8 rounded-3xl border backdrop-blur-sm ${isDark ? "bg-white/5 border-white/5" : "bg-white border-gray-100 shadow-xl shadow-gray-200/50"}`}>
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 mb-6">
-                <Database size={28} />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Secure Cloud Storage</h3>
-              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Your documentation history is securely saved and synced across all your devices in real-time. Never lose track of your work, and instantly access previously generated documents from your personalized dashboard.</p>
-            </motion.div>
-            <motion.div whileHover={{ y: -10 }} className={`p-8 rounded-3xl border backdrop-blur-sm ${isDark ? "bg-white/5 border-white/5" : "bg-white border-gray-100 shadow-xl shadow-gray-200/50"}`}>
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6">
-                <Zap size={28} />
-              </div>
-              <h3 className="text-xl font-bold mb-3">One-Click Export</h3>
-              <p className={`leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>Generate stunning PDF or DOCX files from your markdown instantly. Your outputs are perfectly formatted, deeply structured, and ready to be shared directly with your team, stakeholders, or clients.</p>
+          <div className="flex justify-center">
+            <motion.div whileHover={{ y: -5 }} className={`p-10 md:p-12 w-full max-w-4xl rounded-3xl border backdrop-blur-sm text-left ${isDark ? "bg-white/5 border-white/5" : "bg-white border-gray-100 shadow-xl shadow-gray-200/50"}`}>
+              <h3 className="text-2xl font-bold mb-6">Project Overview</h3>
+              <p className={`text-lg leading-relaxed mb-6 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                DocGen is an advanced, automated documentation engine designed to streamline the software development lifecycle. By seamlessly transforming complex, raw source code into beautifully structured, professional technical documents, it eliminates the tedious manual effort traditionally required to maintain up-to-date documentation.
+              </p>
+              <p className={`text-lg leading-relaxed ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                Features include intelligent code analysis that breaks down logic into understandable explanations, a secure cloud storage system that effortlessly syncs your history across all your devices, and a one-click export capability that generates pristine PDF or DOCX files ready for immediate sharing with your team or clients. With a developer-first interface featuring instant generation, dark mode, and strict privacy controls, DocGen ensures you spend less time writing manuals and more time building great software.
+              </p>
             </motion.div>
           </div>
         </div>
