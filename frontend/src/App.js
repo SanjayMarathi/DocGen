@@ -8,6 +8,8 @@ import ContactView from "./components/views/ContactView";
 import ProfileView from "./components/views/ProfileView";
 import DocumentViewer from "./components/workspace/DocumentViewer";
 import CodeInput from "./components/workspace/CodeInput";
+import { db } from './firebase';
+import { collection, addDoc, getDocs, deleteDoc as firestoreDeleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
 
 // --- API CONFIG ---
 const API_BASE = "/api/";
@@ -31,7 +33,7 @@ function AppContent() {
   // view determines which central view is active (home=workspace, about, contact, profile)
   const [view, setView] = useState("home");
   
-  const [userData, setUserData] = useState({ username: "Guest" });
+  const [userData, setUserData] = useState({ username: "" });
   const [code, setCode] = useState("");
   const [docs, setDocs] = useState("");
   const [history, setHistory] = useState([]);
@@ -83,10 +85,19 @@ function AppContent() {
   };
   
   const fetchHistory = async () => {
+    if (!userData.username) return;
     try {
-      const res = await API.get("history/");
-      setHistory(res.data);
-    } catch {}
+      const q = query(
+        collection(db, "documents"), 
+        where("userId", "==", userData.username)
+      );
+      const querySnapshot = await getDocs(q);
+      const docsData = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      docsData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setHistory(docsData);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleAuth = async (username, password, isRegister) => {
@@ -132,7 +143,22 @@ function AppContent() {
     setAbortController(controller);
 
     let fullContent = "";
-    let serverDocId = null;
+    let fsDocId = null;
+
+    if (userData.username) {
+        const topic = code.split(/[\s\n]+/).slice(0, 5).join(" ").substring(0, 30) || "New Doc";
+        try {
+            const newDocRef = await addDoc(collection(db, "documents"), {
+              userId: userData.username,
+              topic: topic,
+              content: "",
+              created_at: new Date().toISOString()
+            });
+            fsDocId = newDocRef.id;
+            setCurrentDocId(fsDocId);
+            fetchHistory();
+        } catch(e) { console.error("Firestore error", e); }
+    }
 
     try {
       const response = await fetch(`${API_BASE}generate/`, {
@@ -168,10 +194,7 @@ function AppContent() {
         if (isFirstChunk) {
           const match = chunk.match(/^\{"id":\s*(\d+)\}\n/);
           if (match) {
-            serverDocId = parseInt(match[1]);
-            setCurrentDocId(serverDocId);
             chunk = chunk.replace(match[0], "");
-            fetchHistory();
           }
           isFirstChunk = false;
         }
@@ -195,8 +218,8 @@ function AppContent() {
         }
       }
 
-      if (serverDocId) {
-        await API.post(`history/${serverDocId}/update_content/`, {
+      if (fsDocId) {
+        await updateDoc(doc(db, "documents", fsDocId), {
           content: fullContent,
         });
       }
@@ -223,7 +246,7 @@ function AppContent() {
   const deleteDoc = async (id, e) => {
     e.stopPropagation();
     if (window.confirm("Delete this document?")) {
-      await API.delete(`history/${id}/delete/`);
+      await firestoreDeleteDoc(doc(db, "documents", id));
       if (currentDocId === id) {
         setDocs("");
         setCurrentDocId(null);

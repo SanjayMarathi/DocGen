@@ -57,9 +57,26 @@ export default function AuthPage({ handleAuth }) {
               />
             </div>
 
-            <button type="submit" className="w-full py-4 bg-[#111111] dark:bg-white text-white dark:text-black text-sm font-bold hover:bg-[#2dd4a8] dark:hover:bg-[#2dd4a8] transition-colors mt-8 rounded-none">
-              {isRegister ? "Create Account" : "Sign In"}
-            </button>
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              <button type="submit" className="flex-1 py-4 bg-[#111111] dark:bg-white text-white dark:text-black text-sm font-bold hover:bg-[#2dd4a8] dark:hover:bg-[#2dd4a8] transition-colors rounded-none">
+                {isRegister ? "Create Account" : "Sign In"}
+              </button>
+              
+              {!isRegister && (
+                <button 
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setUsername("demo");
+                    setPassword("demouser");
+                    handleAuth("demo", "demouser", false);
+                  }}
+                  className="flex-1 py-4 border border-[#111111] dark:border-white text-[#111111] dark:text-white text-sm font-bold hover:bg-[#2dd4a8] hover:text-black dark:hover:bg-[#2dd4a8] dark:hover:border-[#2dd4a8] transition-colors rounded-none"
+                >
+                  Demo Login
+                </button>
+              )}
+            </div>
           </form>
 
           <div className="mt-8 text-center text-xs text-[#999999] dark:text-gray-500">
