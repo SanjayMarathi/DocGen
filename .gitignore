@@ -27,8 +27,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # React build output
-build/
-dist/
+# build/
+# dist/
 
 # ===============================
 # OS Ignore
