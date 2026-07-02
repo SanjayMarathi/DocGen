@@ -371,13 +371,10 @@ export default function App() {
                 </div>
               ))}
             </div>
-            <div className={`p-4 border-t ${border} ${bgCard}`}>
-              <div
-                onClick={() => setView("profile")}
-                className="flex items-center gap-3 cursor-pointer hover:opacity-80"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold">
-                  {userData.username[0]}
+            <div className={`p-4 border-t ${border} ${bgCard} flex items-center justify-between`}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                  {userData.username?.[0]?.toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold truncate">
@@ -389,8 +386,14 @@ export default function App() {
                     {connection.toUpperCase()}
                   </div>
                 </div>
-                <Settings size={16} />
               </div>
+              <button
+                onClick={logout}
+                className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                title="Logout"
+              >
+                <LogOut size={18} />
+              </button>
             </div>
           </motion.aside>
         )}
@@ -718,31 +721,7 @@ export default function App() {
             </div>
           )}
 
-          {view === "profile" && (
-            <div className="p-10 max-w-2xl mx-auto">
-              <div
-                className={`p-10 border ${border} rounded-[2rem] ${bgCard} text-center shadow-2xl`}
-              >
-                <div className="w-24 h-24 rounded-full bg-blue-600 mx-auto flex items-center justify-center text-white text-4xl font-bold mb-6">
-                  {userData.username[0]}
-                </div>
-                <h1 className="text-3xl font-bold mb-2">{userData.username}</h1>
-                <p className="text-zinc-500 font-medium mb-4 uppercase tracking-widest text-xs">
-                  Active Session
-                </p>
-                <div className="mb-10 text-sm opacity-80">
-                  <p>You are securely logged into DocGen.</p>
-                  <p>Click below to safely terminate your session and return to the login screen.</p>
-                </div>
-                <button
-                  onClick={logout}
-                  className="w-full py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 flex gap-3 items-center justify-center transition-all shadow-lg"
-                >
-                  <LogOut size={20} /> Terminate Session & Logout
-                </button>
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
     </div>
