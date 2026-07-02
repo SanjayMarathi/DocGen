@@ -1,0 +1,10 @@
+django
+djangorestframework
+django-cors-headers
+requests
+wikipedia
+gunicorn
+whitenoise
+djangorestframework-simplejwt
+python-docx
+reportlab
