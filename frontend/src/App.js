@@ -141,6 +141,7 @@ export default function App() {
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    setUserData({ username: "" });
     setHistory([]);
     setView("home");
     setDocs("");
