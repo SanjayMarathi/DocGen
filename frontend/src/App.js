@@ -86,11 +86,16 @@ export default function App() {
     checkConnection();
     if (token) {
       fetchUser();
-      fetchHistory();
     }
     const interval = setInterval(checkConnection, 10000);
     return () => clearInterval(interval);
   }, [token]);
+
+  useEffect(() => {
+    if (userData.username) {
+      fetchHistory();
+    }
+  }, [userData.username]);
 
   const fetchUser = async () => {
     try {
@@ -757,107 +762,151 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
   const [loading, setLoading] = useState(false);
   const isDark = theme === "dark";
 
-  return (
-    <div className={`min-h-screen w-full flex flex-col items-center justify-center p-6 relative overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#030014] text-white" : "bg-[#f4f4f9] text-slate-900"}`}>
-      
-      {/* Immersive Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full mix-blend-multiply filter blur-[100px] opacity-70 animate-blob ${isDark ? "bg-indigo-600/40" : "bg-purple-300/50"}`}></div>
-        <div className={`absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full mix-blend-multiply filter blur-[100px] opacity-70 animate-blob animation-delay-2000 ${isDark ? "bg-purple-600/40" : "bg-blue-300/50"}`}></div>
-        <div className={`absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] rounded-full mix-blend-multiply filter blur-[100px] opacity-70 animate-blob animation-delay-4000 ${isDark ? "bg-blue-600/30" : "bg-pink-300/50"}`}></div>
-        
-        {/* Subtle Grid Overlay */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTUwLDE1MCwxNTAsMC4xKSIvPjwvc3ZnPg==')] opacity-50" />
-      </div>
+  const features = [
+    { icon: <FileText size={20} />, title: "Smart Analysis", desc: "AI breaks down your code into clear explanations" },
+    { icon: <ShieldCheck size={20} />, title: "Secure Storage", desc: "Documents saved safely to your personal account" },
+    { icon: <Download size={20} />, title: "Export Anywhere", desc: "One-click PDF and DOCX generation" },
+    { icon: <Globe size={20} />, title: "Always Accessible", desc: "Access your docs from any device, anytime" },
+  ];
 
-      {/* Main Content Container (z-10) */}
-      <div className="relative z-10 w-full max-w-md flex flex-col items-center">
+  return (
+    <div className={`min-h-screen flex ${isDark ? "bg-[#09090b] text-white" : "bg-[#f8fafc] text-slate-900"}`}>
+      
+      {/* ── Left Panel: Brand + Features ── */}
+      <div className={`hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12 lg:p-16 border-r ${isDark ? "bg-[#0f0f11] border-zinc-800" : "bg-white border-slate-200"}`}>
         
-        {/* Brand Header */}
-        <div className="flex flex-col items-center mb-8">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg backdrop-blur-md border ${isDark ? "bg-white/10 border-white/20 shadow-purple-500/10 text-white" : "bg-white border-white/50 shadow-purple-500/10 text-indigo-600"}`}>
-            <FileText size={28} strokeWidth={2.5} />
+        {/* Top: Logo */}
+        <div className="relative z-10 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDark ? "bg-indigo-500/20 text-indigo-400" : "bg-indigo-100 text-indigo-600"}`}>
+              <FileText size={24} strokeWidth={2.5} />
+            </div>
+            <span className="text-2xl font-bold tracking-tight">DocGen</span>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-center">
-            Turn code into
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-              documentation.
-            </span>
-          </h1>
         </div>
 
-        {/* Glassmorphism Card */}
-        <div className={`w-full p-8 sm:p-10 rounded-3xl backdrop-blur-xl border shadow-2xl transition-all duration-300 ${isDark ? "bg-[#ffffff08] border-[#ffffff15] shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]" : "bg-white/60 border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]"}`}>
-          
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold tracking-tight">
-              {isLogin ? "Welcome back" : "Create account"}
-            </h2>
-            <button
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className={`p-2 rounded-full transition-colors ${isDark ? "bg-white/10 hover:bg-white/20 text-gray-300" : "bg-black/5 hover:bg-black/10 text-gray-600"}`}
-            >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-          </div>
-
-          <p className={`text-sm mb-8 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            {isLogin ? "Enter your credentials to access your workspace." : "Get started with DocGen in seconds."}
+        {/* Center: Headline and Details */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center max-w-xl py-12">
+          <h1 className="text-5xl font-extrabold leading-[1.1] tracking-tight mb-6">
+            Turn your code into
+            <span className="block text-indigo-500">documentation.</span>
+          </h1>
+          <p className={`text-lg leading-relaxed mb-10 ${isDark ? "text-zinc-400" : "text-slate-600"}`}>
+            DocGen is an advanced AI-powered platform that transforms complex source code into beautifully structured, professional technical documents — instantly and effortlessly.
           </p>
 
+          {/* Feature grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {features.map((f, i) => (
+              <div key={i} className={`flex items-start gap-4 p-5 rounded-2xl border transition-colors ${isDark ? "bg-[#18181b] border-zinc-800 hover:border-indigo-500/50" : "bg-slate-50 border-slate-200 hover:border-indigo-300"}`}>
+                <div className={`mt-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>{f.icon}</div>
+                <div>
+                  <div className="text-sm font-bold mb-1">{f.title}</div>
+                  <div className={`text-sm leading-relaxed ${isDark ? "text-zinc-500" : "text-slate-500"}`}>{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom: Footer */}
+        <div className="relative z-10">
+          <p className={`text-sm font-medium ${isDark ? "text-zinc-500" : "text-slate-500"}`}>
+            &copy; {new Date().getFullYear()} DocGen &middot; docgenindia@gmail.com
+          </p>
+        </div>
+      </div>
+
+      {/* ── Right Panel: Auth Form ── */}
+      <div className={`w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 lg:p-16 relative ${isDark ? "bg-[#09090b]" : "bg-[#f8fafc]"}`}>
+        
+        {/* Theme toggle */}
+        <button
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          className={`absolute top-6 right-6 p-3 rounded-full transition-colors ${isDark ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300" : "bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 shadow-sm"}`}
+        >
+          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+
+        {/* Mobile logo (shown only on small screens) */}
+        <div className="lg:hidden mb-10 text-center flex flex-col items-center">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${isDark ? "bg-indigo-500/20 text-indigo-400" : "bg-indigo-100 text-indigo-600"}`}>
+            <FileText size={28} strokeWidth={2.5} />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight">DocGen</h1>
+          <p className={`text-sm mt-2 ${isDark ? "text-zinc-400" : "text-slate-500"}`}>AI-powered documentation</p>
+        </div>
+
+        <div className="w-full max-w-md">
+          {/* Heading */}
+          <div className="mb-10 text-center lg:text-left">
+            <h2 className="text-3xl font-bold mb-3 tracking-tight">
+              {isLogin ? "Welcome back" : "Create your account"}
+            </h2>
+            <p className={`text-base ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
+              {isLogin ? "Enter your credentials to access your workspace." : "Get started with DocGen in seconds."}
+            </p>
+          </div>
+
+          {/* Error / Success messages */}
           {errorMsg && (
-            <div className={`mb-6 p-3 rounded-xl text-sm font-medium flex items-center gap-2 border ${isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-600"}`}>
-              <X size={16} /> {errorMsg}
+            <div className={`mb-6 p-4 rounded-xl text-sm font-medium flex items-center gap-3 border ${isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-600"}`}>
+              <X size={18} className="flex-shrink-0" /> {errorMsg}
             </div>
           )}
           {successMsg && (
-            <div className={`mb-6 p-3 rounded-xl text-sm font-medium flex items-center gap-2 border ${isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-600"}`}>
-              <ShieldCheck size={16} /> {successMsg}
+            <div className={`mb-6 p-4 rounded-xl text-sm font-medium flex items-center gap-3 border ${isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-600"}`}>
+              <ShieldCheck size={18} className="flex-shrink-0" /> {successMsg}
             </div>
           )}
 
+          {/* Form */}
           <form
             onSubmit={async (e) => {
               e.preventDefault();
               setErrorMsg(""); setSuccessMsg(""); setLoading(true);
               const res = await onAuth(isLogin ? "login" : "register", { username: user, password: pass });
               setLoading(false);
-              if (res && !res.success) setErrorMsg(res.error);
-              else if (res && res.message) {
+              if (res && !res.success) {
+                setErrorMsg(res.error);
+              } else if (res && res.message) {
                 setSuccessMsg(res.message);
                 if (!isLogin) { setUser(""); setPass(""); }
               }
             }}
-            className="space-y-4"
+            className="space-y-5"
           >
             <div>
+              <label className={`block text-sm font-semibold mb-2 ${isDark ? "text-zinc-400" : "text-slate-700"}`}>Username</label>
               <input
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
-                placeholder="Username"
-                className={`w-full px-5 py-4 rounded-xl outline-none font-medium text-sm transition-all focus:ring-2 focus:ring-offset-2 ${isDark ? "bg-black/30 text-white placeholder-gray-500 focus:ring-purple-500 focus:ring-offset-[#030014] shadow-inner border border-white/5" : "bg-white text-gray-900 placeholder-gray-400 focus:ring-indigo-500 focus:ring-offset-[#f4f4f9] shadow-inner border border-gray-100"}`}
+                placeholder="Enter your username"
+                className={`w-full px-5 py-3.5 rounded-xl border outline-none text-base transition-colors ${isDark ? "bg-[#18181b] border-zinc-800 text-white placeholder-zinc-500 focus:border-indigo-500" : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"}`}
                 required
               />
             </div>
             <div>
+              <label className={`block text-sm font-semibold mb-2 ${isDark ? "text-zinc-400" : "text-slate-700"}`}>Password</label>
               <input
                 type="password"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
-                placeholder="Password"
-                className={`w-full px-5 py-4 rounded-xl outline-none font-medium text-sm transition-all focus:ring-2 focus:ring-offset-2 ${isDark ? "bg-black/30 text-white placeholder-gray-500 focus:ring-purple-500 focus:ring-offset-[#030014] shadow-inner border border-white/5" : "bg-white text-gray-900 placeholder-gray-400 focus:ring-indigo-500 focus:ring-offset-[#f4f4f9] shadow-inner border border-gray-100"}`}
+                placeholder="Enter your password"
+                className={`w-full px-5 py-3.5 rounded-xl border outline-none text-base transition-colors ${isDark ? "bg-[#18181b] border-zinc-800 text-white placeholder-zinc-500 focus:border-indigo-500" : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"}`}
                 required
               />
             </div>
             
             <button
               disabled={loading}
-              className={`w-full py-4 mt-2 rounded-xl font-bold text-sm text-white shadow-lg transition-all ${loading ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"} bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500`}
+              className={`w-full py-4 mt-2 rounded-xl font-bold text-base text-white transition-all shadow-sm ${loading ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"} ${isDark ? "bg-indigo-600 hover:bg-indigo-500" : "bg-indigo-600 hover:bg-indigo-700"}`}
             >
-              {loading ? <Loader2 size={20} className="animate-spin mx-auto" /> : (isLogin ? "Sign In" : "Create Account")}
+              {loading ? <Loader2 size={22} className="animate-spin mx-auto" /> : (isLogin ? "Sign In" : "Create Account")}
             </button>
           </form>
 
+          {/* Demo Button */}
           {isLogin && (
             <button
               type="button"
@@ -866,29 +915,32 @@ const AuthPage = ({ mode, onAuth, theme, setTheme }) => {
                 setPass("demouser");
                 onAuth("login", { username: "demo", password: "demouser" });
               }}
-              className={`w-full py-4 mt-3 rounded-xl font-bold text-sm transition-all border ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10 text-white" : "bg-white/50 border-gray-200 hover:bg-white/80 text-gray-700"}`}
+              className={`w-full py-4 mt-4 rounded-xl font-bold text-base transition-all border ${isDark ? "bg-[#18181b] border-zinc-800 hover:bg-zinc-800 text-white" : "bg-white border-slate-200 hover:bg-slate-50 text-slate-700 shadow-sm"}`}
             >
               Try Demo Account
             </button>
           )}
 
-          <div className="mt-8 text-center">
-            <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          {/* Switch mode */}
+          <div className="mt-8 pt-6 border-t text-center border-dashed border-zinc-500/30">
+            <p className={`text-base ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
               {isLogin ? "Don't have an account?" : "Already have an account?"}
               <button
                 onClick={() => { setErrorMsg(""); setSuccessMsg(""); navigate(isLogin ? "/register" : "/login"); }}
-                className={`ml-2 font-bold transition-colors ${isDark ? "text-purple-400 hover:text-purple-300" : "text-indigo-600 hover:text-indigo-700"}`}
+                className={`ml-2 font-bold transition-colors ${isDark ? "text-indigo-400 hover:text-indigo-300" : "text-indigo-600 hover:text-indigo-700"}`}
               >
                 {isLogin ? "Sign up" : "Sign in"}
               </button>
             </p>
           </div>
-          
+
         </div>
 
-        {/* Footer text */}
-        <div className={`mt-8 text-xs opacity-50 font-medium ${isDark ? "text-white" : "text-black"}`}>
-          &copy; {new Date().getFullYear()} DocGen &middot; docgenindia@gmail.com
+        {/* Mobile footer */}
+        <div className="lg:hidden mt-12 text-center">
+          <p className={`text-sm font-medium ${isDark ? "text-zinc-500" : "text-slate-400"}`}>
+            &copy; {new Date().getFullYear()} DocGen &middot; docgenindia@gmail.com
+          </p>
         </div>
       </div>
     </div>
