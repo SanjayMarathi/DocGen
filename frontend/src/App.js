@@ -9,7 +9,7 @@ import { vscDarkPlus, coy } from "react-syntax-highlighter/dist/esm/styles/prism
 import {
   FileText, Download, Wand2, ChevronDown, ChevronUp, Copy, Trash2,
   LogOut, Menu, X, StopCircle, Sun, Moon, PlusCircle, Loader2, Settings,
-  Layout, Paperclip, Mail, Github, Code2, Database, Zap, Sparkles
+  Layout, Paperclip, Mail, Github, Code2, Database, Zap, Sparkles, ShieldCheck, Globe
 } from "lucide-react";
 import { db } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc as firestoreDeleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
