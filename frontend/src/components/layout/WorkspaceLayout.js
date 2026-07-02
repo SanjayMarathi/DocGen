@@ -2,7 +2,6 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import Sidebar from "./Sidebar";
-import Ferrofluid from "../ui/Ferrofluid";
 
 export default function WorkspaceLayout({
   children,
@@ -24,30 +23,9 @@ export default function WorkspaceLayout({
 
   return (
     <div className={`flex h-screen w-full overflow-hidden font-sans ${isDark ? "bg-[#111111] text-gray-100" : "bg-white text-[#111111]"} transition-colors duration-300 relative`}>
-      <div className="absolute inset-0 z-0">
-        <Ferrofluid
-          colors={isDark ? ["#4F46E5", "#06B6D4", "#E0F2FE"] : ["#a855f7", "#ec4899", "#f43f5e"]}
-          speed={0.5}
-          scale={1}
-          turbulence={1}
-          fluidity={0.1}
-          rimWidth={0.2}
-          sharpness={3}
-          shimmer={1}
-          glow={2}
-          flowDirection="down"
-          opacity={isDark ? 0.3 : 0.15}
-          mouseInteraction={true}
-          mouseStrength={1}
-          mouseRadius={0.3}
-        />
-      </div>
-      
-      <div className="flex z-10 w-full h-full relative pointer-events-none">
-        <div className="pointer-events-auto h-full flex">
-          <AnimatePresence>
-            {showHistory && (
-              <Sidebar
+      <AnimatePresence>
+        {showHistory && (
+          <Sidebar
             setView={setView}
             setShowHistory={setShowHistory}
             userData={userData}
@@ -101,8 +79,6 @@ export default function WorkspaceLayout({
         <div className="flex-1 flex flex-col overflow-hidden relative">
             {children}
         </div>
-      </div>
-      </div>
       </div>
     </div>
   );

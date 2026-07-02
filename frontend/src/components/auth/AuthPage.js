@@ -8,17 +8,19 @@ export default function AuthPage({ handleAuth }) {
   const isRegister = location.pathname === '/register';
   
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   // Clear fields when toggling mode
   useEffect(() => {
     setUsername("");
+    setEmail("");
     setPassword("");
   }, [isRegister]);
 
   const onSubmit = (e) => {
     e.preventDefault();
-    handleAuth(username, password, isRegister);
+    handleAuth(username, password, isRegister, email);
   };
 
   return (
@@ -44,6 +46,20 @@ export default function AuthPage({ handleAuth }) {
                 required
               />
             </div>
+
+            {isRegister && (
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider mb-2 opacity-80">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 border-b border-[#dddddd] dark:border-[#333333] bg-transparent outline-none focus:border-[#2dd4a8] transition-colors text-sm"
+                  placeholder="Enter your email"
+                  required={isRegister}
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-2 opacity-80">Password</label>
