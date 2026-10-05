@@ -3,7 +3,9 @@ backend/venv/
 backend/db.sqlite3
 __pycache__/
 *.pyc
-frontend/build/
 .git/
 .vscode/
 .idea/
+
+# NOTE: frontend/build/ must NOT be ignored. The Dockerfile does not run `npm run build`;
+# it serves the production build that is committed to the repository.
