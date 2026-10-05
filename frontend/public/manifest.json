@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "DocGen",
+  "name": "DocGen - AI documentation generator",
   "icons": [
     {
       "src": "favicon.svg",
@@ -11,6 +11,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#cfc9b7",
+  "background_color": "#cfc9b7"
 }

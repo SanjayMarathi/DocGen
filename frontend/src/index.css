@@ -2,108 +2,334 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================================
+   DocGen theme - soft aurora gradient + frosted glass + one yellow accent
+   Colours are "R G B" channels so Tailwind opacity modifiers keep working.
+   ===================================================================== */
+:root {
+  color-scheme: light;
+
+  --ink: 23 24 26;
+  --accent: 253 233 75;
+  --accent-ink: 26 26 26;
+
+  /* aurora: centre + four corners (peach, teal, sage, taupe) */
+  --a0: #cfc9b7;
+  --a1: #e8d0b0;
+  --a2: #a6d2d8;
+  --a3: #dde7cb;
+  --a4: #dac7b9;
+
+  --glass-bg: rgba(255, 255, 255, 0.30);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 8px 32px rgba(60, 60, 40, 0.10);
+  --paper-bg: rgba(255, 255, 255, 0.62);
+
+  --chip-bg: rgba(255, 255, 255, 0.78);
+  --chip-hover: rgba(255, 255, 255, 0.98);
+  --chip-border: rgba(255, 255, 255, 0.9);
+  --field-bg: rgba(255, 255, 255, 0.55);
+  --code-bg: rgba(255, 255, 255, 0.7);
+  --line: rgba(23, 24, 26, 0.12);
+}
+
+html.dark {
+  color-scheme: dark;
+
+  --ink: 244 244 242;
+  --accent: 253 233 75;
+  --accent-ink: 26 26 26;
+
+  --a0: #0f1412;
+  --a1: #3b2f22;
+  --a2: #123a42;
+  --a3: #1f3125;
+  --a4: #3a2b2b;
+
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --paper-bg: rgba(20, 24, 22, 0.66);
+
+  --chip-bg: rgba(255, 255, 255, 0.10);
+  --chip-hover: rgba(255, 255, 255, 0.18);
+  --chip-border: rgba(255, 255, 255, 0.14);
+  --field-bg: rgba(255, 255, 255, 0.06);
+  --code-bg: rgba(0, 0, 0, 0.35);
+  --line: rgba(255, 255, 255, 0.14);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0a0a0a;
-  color: white;
+  background-color: var(--a0);
+  color: rgb(var(--ink));
 }
 
-/* Dark Mode Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+::selection {
+  background: rgb(var(--accent) / 0.75);
+  color: rgb(var(--accent-ink));
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-}
-
-/* Light Mode Scrollbar */
-.light-theme ::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
-.light-theme ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.25);
-}
-
-/* Custom Scrollbar for specific elements */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-}
-
-/* Animated Background - Dark Mode (Grey) */
-.animated-bg {
+/* ---------------------------------------------------------------------
+   Aurora background (fixed, behind everything). Only transforms animate,
+   so it stays cheap on the GPU.
+   --------------------------------------------------------------------- */
+.aurora {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
+  overflow: hidden;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgba(128, 128, 128, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(128, 128, 128, 0.08) 1px, transparent 1px);
-  background-size: 50px 50px;
-  animation: moveGrid 20s linear infinite;
+  background:
+    radial-gradient(60vmax 52vmax at 4% 6%,   var(--a1), transparent 70%),
+    radial-gradient(58vmax 56vmax at 86% 4%,  var(--a2), transparent 70%),
+    radial-gradient(62vmax 56vmax at 0% 100%, var(--a3), transparent 70%),
+    radial-gradient(56vmax 52vmax at 100% 100%, var(--a4), transparent 70%),
+    var(--a0);
 }
 
-@keyframes moveGrid {
-  0% {
-    background-position: 0 0;
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 9999px;
+  will-change: transform;
+}
+
+.aurora::before {
+  top: -12vmax;
+  right: 8vmax;
+  background: radial-gradient(circle, var(--a2) 0%, transparent 68%);
+  opacity: 0.65;
+  animation: drift-a 26s ease-in-out infinite alternate;
+}
+
+.aurora::after {
+  bottom: -14vmax;
+  left: 6vmax;
+  background: radial-gradient(circle, var(--a1) 0%, transparent 68%);
+  opacity: 0.6;
+  animation: drift-b 32s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(-9vmax, 8vmax, 0) scale(1.12); }
+}
+
+@keyframes drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.05); }
+  to   { transform: translate3d(10vmax, -7vmax, 0) scale(0.95); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before,
+  .aurora::after,
+  .animate-rise {
+    animation: none !important;
   }
-  100% {
-    background-position: 50px 50px;
+}
+
+/* ---------------------------------------------------------------------
+   Reusable components
+   --------------------------------------------------------------------- */
+@layer components {
+  /* frosted glass surface (the "Prompt" card look) */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    backdrop-filter: blur(22px) saturate(150%);
+  }
+
+  /* more opaque glass for long-form reading */
+  .glass-paper {
+    background: var(--paper-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(26px) saturate(150%);
+    backdrop-filter: blur(26px) saturate(150%);
+  }
+
+  /* small square icon button (+, mic, arrow ...) */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.6rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--chip-border);
+    background: var(--chip-bg);
+    color: rgb(var(--ink));
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
+    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    cursor: pointer;
+  }
+
+  .chip:hover:not(:disabled) {
+    background: var(--chip-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.10);
+  }
+
+  .chip:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+  }
+
+  .chip:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* the yellow accent button */
+  .chip-accent {
+    background: rgb(var(--accent));
+    border-color: rgb(var(--accent) / 0.6);
+    color: rgb(var(--accent-ink));
+  }
+
+  .chip-accent:hover:not(:disabled) {
+    background: rgb(var(--accent));
+    filter: brightness(0.96);
+  }
+
+  /* text inputs */
+  .field {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--chip-border);
+    background: var(--field-bg);
+    color: rgb(var(--ink));
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .field::placeholder {
+    color: rgb(var(--ink) / 0.45);
+  }
+
+  .field:focus {
+    background: var(--chip-hover);
+    border-color: rgb(var(--accent));
+    box-shadow: 0 0 0 3px rgb(var(--accent) / 0.45);
+  }
+
+  html.dark .field:focus {
+    background: rgba(255, 255, 255, 0.10);
   }
 }
 
-/* Animated Background - Light Mode */
-.light-theme .animated-bg {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+button:focus-visible,
+a:focus-visible,
+label:focus-within {
+  outline: 2px solid rgb(var(--ink) / 0.55);
+  outline-offset: 2px;
 }
 
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0px, 0px) scale(1); }
+/* ---------------------------------------------------------------------
+   Rendered documentation (Markdown). Tailwind's preflight strips default
+   element styles, so we restore a readable document style here.
+   --------------------------------------------------------------------- */
+.doc {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
-.animate-blob {
-  animation: blob 7s infinite;
+.doc > *:first-child { margin-top: 0; }
+
+.doc h1, .doc h2, .doc h3, .doc h4 {
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
-.animation-delay-2000 {
-  animation-delay: 2s;
+.doc h1 { font-size: 1.85rem; margin: 0 0 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); }
+.doc h2 { font-size: 1.4rem; margin: 2rem 0 0.75rem; }
+.doc h3 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; }
+.doc h4 { font-size: 1rem; margin: 1.25rem 0 0.4rem; }
+
+.doc p { margin: 0 0 1rem; }
+.doc ul { list-style: disc; padding-left: 1.5rem; margin: 0 0 1rem; }
+.doc ol { list-style: decimal; padding-left: 1.5rem; margin: 0 0 1rem; }
+.doc li { margin: 0.25rem 0; }
+.doc li > ul, .doc li > ol { margin: 0.25rem 0 0.25rem; }
+.doc strong { font-weight: 700; }
+.doc em { font-style: italic; }
+.doc hr { border: 0; border-top: 1px solid var(--line); margin: 1.5rem 0; }
+
+.doc a {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--accent));
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
 }
 
-.animation-delay-4000 {
-  animation-delay: 4s;
+.doc blockquote {
+  margin: 0 0 1rem;
+  padding: 0.25rem 1rem;
+  border-left: 3px solid rgb(var(--accent));
+  color: rgb(var(--ink) / 0.8);
 }
+
+.doc .inline-code {
+  padding: 0.12rem 0.4rem;
+  border-radius: 0.375rem;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.doc .table-wrap {
+  overflow-x: auto;
+  margin: 0 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+}
+
+.doc table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.doc th, .doc td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--line); }
+.doc th { background: var(--code-bg); font-weight: 700; }
+.doc tr:last-child td { border-bottom: 0; }
+
+.codeblock {
+  margin: 0 0 1.25rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--code-bg);
+}
+
+.codeblock pre,
+.codeblock code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  font-size: 0.85rem !important;
+}
+
+/* ---------------------------------------------------------------------
+   Scrollbars
+   --------------------------------------------------------------------- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: rgb(var(--ink) / 0.18); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--ink) / 0.3); }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
