@@ -45,6 +45,8 @@ ROOT_URLCONF = 'backend.urls'
 
 
 # ---------------- TEMPLATES ----------------
+import os
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -104,12 +106,12 @@ WHITENOISE_ROOT = BASE_DIR.parent / 'frontend' / 'build'
 # =====================================================
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+# ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
